@@ -11,14 +11,15 @@ Current outbound event types:
 
 - `payment.success`
 - `payment.failed`
-- `payment.plan_created`
+{/* - `payment.plan_created` */}
 - `call.completed`
 
-Webhook management endpoints are under `POST/GET/PUT/DELETE /webhooks-api` (authenticated).
+Webhook URLs are configured in the platform under `Settings > Webhooks`.
 
 ## How Delivery Works
 
 1. Create a webhook with a destination `url` and `subscribedEvents`.
+   You do this in the platform UI at `Settings > Webhooks`.
 2. Cora generates and stores a per-webhook secret.
 3. When an event happens, Cora builds a standard webhook envelope and sends an HTTP `POST` to your URL.
 4. Cora logs every attempt and retries transient failures.
@@ -134,7 +135,7 @@ Example:
 }
 ```
 
-### `payment.plan_created`
+{/* ### `payment.plan_created`
 
 Sent when a payment plan is created.
 
@@ -171,7 +172,7 @@ Example:
     { "date": "2026-02-28", "amount": "100.00" }
   ]
 }
-```
+``` */}
 
 ### `call.completed`
 
@@ -229,18 +230,3 @@ function isValidSignature(rawBodyObject: unknown, signature: string, secret: str
   return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
 }
 ```
-
-## Testing
-
-You can trigger a test delivery with:
-
-- `POST /webhooks-api/:id/test`
-
-Optional body:
-
-```json
-{
-  "eventType": "payment.success"
-}
-```
-
