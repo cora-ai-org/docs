@@ -1,0 +1,246 @@
+---
+title: "Webhooks"
+description: "How webhook delivery works, which events are sent, and what payloads to expect."
+---
+
+## Overview
+
+Use webhooks to receive real-time notifications from Cora when key events happen.
+
+Current outbound event types:
+
+- `payment.success`
+- `payment.failed`
+- `payment.plan_created`
+- `call.completed`
+
+Webhook management endpoints are under `POST/GET/PUT/DELETE /webhooks-api` (authenticated).
+
+## How Delivery Works
+
+1. Create a webhook with a destination `url` and `subscribedEvents`.
+2. Cora generates and stores a per-webhook secret.
+3. When an event happens, Cora builds a standard webhook envelope and sends an HTTP `POST` to your URL.
+4. Cora logs every attempt and retries transient failures.
+
+## Request Format
+
+Every delivery is a `POST` with `Content-Type: application/json`.
+
+Headers:
+
+- `X-Webhook-Signature`: HMAC-SHA256 hex digest of `JSON.stringify(payload)` signed with your webhook secret
+- `X-Webhook-Event`: Event name (for example `payment.success`)
+- `X-Webhook-Timestamp`: ISO-8601 timestamp from the payload
+- `X-Webhook-Delivery-Id`: Internal delivery log id
+- `User-Agent`: `Cora-Webhooks/1.0`
+
+Body envelope:
+
+```json
+{
+  "event": "payment.success",
+  "eventCategory": "payments",
+  "organization": {
+    "id": "org_123",
+    "name": "Acme Corp"
+  },
+  "agent": {
+    "id": "agent_123",
+    "name": "Collections Agent"
+  },
+  "timestamp": "2026-02-17T18:05:21.841Z",
+  "payload": {}
+}
+```
+
+`agent` is only included for agent-level events where an `agentId` exists.
+
+## Events And Payloads
+
+### `payment.success`
+
+Sent when a payment is successfully processed.
+
+`payload` fields (normalized):
+
+- `title`
+- `name`
+- `fileNumber`
+- `balance`
+- `callId`
+- `amount`
+- `paymentDate`
+- `note`
+- `phoneNumber`
+- `agentName`
+- Optional: `amountPerInstallment`
+- Optional: `numberOfInstallments`
+- Optional: `consumerId`
+
+Example:
+
+```json
+{
+  "title": "Acme Corp Payment Success",
+  "name": "Jane Smith",
+  "fileNumber": "12345",
+  "balance": "1250.00",
+  "callId": "call_abc123",
+  "amount": "100.00",
+  "paymentDate": "2026-01-30",
+  "note": "Payment received",
+  "phoneNumber": "+15125550123",
+  "agentName": "Collections Agent",
+  "amountPerInstallment": "25.00",
+  "numberOfInstallments": 4,
+  "consumerId": "98765"
+}
+```
+
+### `payment.failed`
+
+Sent when a payment attempt fails.
+
+`payload` fields (normalized):
+
+- `title`
+- `name`
+- `fileNumber`
+- `balance`
+- `callId`
+- `amount`
+- `paymentDate`
+- `note` (failure reason)
+- `phoneNumber`
+- `agentName`
+- Optional: `amountPerInstallment`
+- Optional: `numberOfInstallments`
+
+Example:
+
+```json
+{
+  "title": "Acme Corp Payment Failed",
+  "name": "Jane Smith",
+  "fileNumber": "12345",
+  "balance": "1250.00",
+  "callId": "call_abc123",
+  "amount": "100.00",
+  "paymentDate": "2026-01-30",
+  "note": "Insufficient funds",
+  "phoneNumber": "+15125550123",
+  "agentName": "Collections Agent"
+}
+```
+
+### `payment.plan_created`
+
+Sent when a payment plan is created.
+
+`payload` for this event is integration-specific and can include schedule data. Common fields include:
+
+- `name`
+- `fileNumber` or `consumerId`
+- `balance`
+- `callId`
+- `totalAmount`
+- `paymentDate`
+- `numberOfInstallments`
+- `amountPerInstallment`
+- `phoneNumber`
+- `agentName`
+- Optional: `schedule` (array of installments)
+
+Example:
+
+```json
+{
+  "name": "Jane Smith",
+  "consumerId": "98765",
+  "balance": "1250.00",
+  "callId": "call_abc123",
+  "totalAmount": "500.00",
+  "paymentDate": "2026-01-30",
+  "numberOfInstallments": 5,
+  "amountPerInstallment": "100.00",
+  "phoneNumber": "+15125550123",
+  "agentName": "Collections Agent",
+  "schedule": [
+    { "date": "2026-01-30", "amount": "100.00" },
+    { "date": "2026-02-28", "amount": "100.00" }
+  ]
+}
+```
+
+### `call.completed`
+
+Sent when a call transitions to completed.
+
+`payload` fields:
+
+- `callId`
+- `phoneNumber`
+- `status`
+- `duration`
+- `outcomes`
+- `summary` (sensitive card values masked)
+- `createdAt`
+- `endedAt`
+
+Example:
+
+```json
+{
+  "callId": "67a0f74d1c2e8a12f9130ae2",
+  "phoneNumber": "+15125550123",
+  "status": "completed",
+  "duration": 180000,
+  "outcomes": {
+    "paymentMade": true
+  },
+  "summary": "Customer agreed to make payment.",
+  "createdAt": "2026-02-17T17:00:01.000Z",
+  "endedAt": "2026-02-17T17:03:01.000Z"
+}
+```
+
+## Retries, Timeouts, And Failures
+
+- Delivery timeout: `30s`
+- Success: any `2xx` response
+- Retryable HTTP status codes: `408`, `429`, `500`, `502`, `503`, `504`
+- Network failures are retried
+- Defaults per webhook:
+  - `maxRetries`: `3` (total attempts: 4 including initial attempt)
+  - `retryDelayMs`: `5000`
+  - `exponentialBackoff`: `true` (multiplier `x5` per retry)
+
+## Verify Signatures
+
+Example verifier in Node.js:
+
+```ts
+import crypto from "crypto";
+
+function isValidSignature(rawBodyObject: unknown, signature: string, secret: string) {
+  const payload = JSON.stringify(rawBodyObject);
+  const expected = crypto.createHmac("sha256", secret).update(payload).digest("hex");
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+}
+```
+
+## Testing
+
+You can trigger a test delivery with:
+
+- `POST /webhooks-api/:id/test`
+
+Optional body:
+
+```json
+{
+  "eventType": "payment.success"
+}
+```
+
