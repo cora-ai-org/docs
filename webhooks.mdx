@@ -188,6 +188,35 @@ Sent when a call transitions to completed.
 - `createdAt`
 - `endedAt`
 
+`outcomes` is a sparse object: fields are only included when detected during call analysis.
+
+Possible `outcomes` fields:
+
+- `confirmedName` (boolean)
+- `wasTheRightNumber` (boolean)
+- `wasTheRightParty` (boolean)
+- `wasWrongNumber` (boolean)
+- `wasWrongParty` (boolean)
+- `wantedToTalkHuman` (boolean)
+- `wantsCallBack` (boolean)
+- `ceaseAndDesist` (boolean)
+- `doNotCall` (boolean)
+- `lawSuitRisk` (boolean)
+- `fraud` (boolean)
+- `jail` (boolean)
+- `refuseToPay` (boolean)
+- `dispute` (boolean)
+- `legalAction` (boolean)
+- `cardDetailsProvided` (boolean)
+- `paymentMade` (boolean)
+- `plan_accepted` (boolean)
+- `plan_type` (string enum):
+  - `pay_in_full`
+  - `settle_today`
+  - `settlement_plan`
+  - `regular_plan`
+  - `tailored_plan`
+
 Example:
 
 ```json
@@ -197,7 +226,11 @@ Example:
   "status": "completed",
   "duration": 180000,
   "outcomes": {
-    "paymentMade": true
+    "confirmedName": true,
+    "wasTheRightParty": true,
+    "paymentMade": true,
+    "plan_accepted": false,
+    "plan_type": "regular_plan"
   },
   "summary": "Customer agreed to make payment.",
   "createdAt": "2026-02-17T17:00:01.000Z",
