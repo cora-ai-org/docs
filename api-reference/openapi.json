@@ -1,216 +1,749 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "Cora Public API v2",
+    "description": "Public Accounts CRUD API scoped by API key and organization.",
+    "version": "2.0.0"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://cora-api-bz2d.onrender.com",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:4000",
+      "description": "Local"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "ApiKeyAuth": [],
+      "OrganizationHeader": []
     }
   ],
   "paths": {
-    "/plants": {
+    "/api/v2/accounts": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
+        "operationId": "listAccountsV2",
+        "summary": "List accounts",
+        "description": "Returns paginated accounts for the authorized organization.",
         "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
           {
             "name": "limit",
             "in": "query",
-            "description": "The maximum number of results to return",
+            "required": false,
             "schema": {
               "type": "integer",
-              "format": "int32"
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
             }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Searches externalId, phoneNumber, and metadata.filenumber"
           }
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Accounts returned",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
+                  "$ref": "#/components/schemas/AccountListResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       },
       "post": {
-        "description": "Creates a new plant in the store",
+        "operationId": "createAccountV2",
+        "summary": "Create account",
+        "description": "Creates an account in the authorized organization.",
         "requestBody": {
-          "description": "Plant to add to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/AccountCreateInput"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
-          "200": {
-            "description": "plant response",
+          "201": {
+            "description": "Account created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/Account"
                 }
               }
             }
           },
           "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/api/v2/accounts/{id}": {
+      "get": {
+        "operationId": "getAccountV2",
+        "summary": "Get account",
+        "description": "Returns one account by ID for the authorized organization.",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
+            "$ref": "#/components/parameters/AccountId"
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Account returned",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/Account"
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
+      },
+      "put": {
+        "operationId": "updateAccountV2",
+        "summary": "Update account",
+        "description": "Updates one account by ID for the authorized organization.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AccountId"
+          }
+        ],
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/AccountUpdateInput"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Account updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteAccountV2",
+        "summary": "Delete account",
+        "description": "Soft deletes one account by ID for the authorized organization.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AccountId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
     }
   },
   "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Public API key. You may also send the key as Authorization: Bearer <key>."
+      },
+      "OrganizationHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Organization-Id",
+        "description": "Required when an API key is mapped to multiple organizations."
+      }
+    },
+    "parameters": {
+      "AccountId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Account MongoDB ID"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
+      "Unauthorized": {
+        "description": "Missing or invalid API key",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
             }
           }
-        ]
+        }
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
+      "Forbidden": {
+        "description": "API key is not authorized for the organization",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Duplicate resource conflict",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       }
     },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+    "schemas": {
+      "Account": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "_id",
+          "organizationId",
+          "externalId",
+          "phoneNumber",
+          "portfolioId"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "MongoDB account id"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "External/source account id (often file number)"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Primary phone number"
+          },
+          "portfolioId": {
+            "type": "string",
+            "description": "Portfolio identifier"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AccountStatus"
+          },
+          "clientStatus": {
+            "type": "string",
+            "description": "Upstream client/system status label"
+          },
+          "typeOfDebt": {
+            "$ref": "#/components/schemas/DebtType"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Free-form account metadata"
+          },
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "emailAddress": {
+            "type": "string",
+            "description": "Primary email address"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "history": {
+            "$ref": "#/components/schemas/History"
+          },
+          "compliance": {
+            "$ref": "#/components/schemas/Compliance"
+          },
+          "paymentRules": {
+            "$ref": "#/components/schemas/PaymentRules"
+          },
+          "bank": {
+            "type": "string"
+          },
+          "client": {
+            "type": "string"
+          },
+          "originalCreditor": {
+            "type": "string"
+          },
+          "currentBalance": {
+            "type": "number",
+            "description": "Current outstanding balance"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AccountCreateInput": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "phoneNumber",
+          "externalId",
+          "portfolioId"
+        ],
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "description": "Primary phone number for the account"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "External/source account id"
+          },
+          "portfolioId": {
+            "type": "string",
+            "description": "Portfolio identifier"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AccountStatus"
+          },
+          "clientStatus": {
+            "type": "string",
+            "description": "Upstream client/system status label"
+          },
+          "typeOfDebt": {
+            "$ref": "#/components/schemas/DebtType"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Free-form metadata object"
+          },
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "emailAddress": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "history": {
+            "$ref": "#/components/schemas/History"
+          },
+          "compliance": {
+            "$ref": "#/components/schemas/Compliance"
+          },
+          "paymentRules": {
+            "$ref": "#/components/schemas/PaymentRules"
+          },
+          "bank": {
+            "type": "string"
+          },
+          "client": {
+            "type": "string"
+          },
+          "originalCreditor": {
+            "type": "string"
+          },
+          "currentBalance": {
+            "type": "number"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AccountUpdateInput": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "description": "Primary phone number"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "External/source account id"
+          },
+          "portfolioId": {
+            "type": "string",
+            "description": "Portfolio identifier"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AccountStatus"
+          },
+          "clientStatus": {
+            "type": "string",
+            "description": "Upstream client/system status label"
+          },
+          "typeOfDebt": {
+            "$ref": "#/components/schemas/DebtType"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Free-form metadata object"
+          },
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "emailAddress": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "history": {
+            "$ref": "#/components/schemas/History"
+          },
+          "compliance": {
+            "$ref": "#/components/schemas/Compliance"
+          },
+          "paymentRules": {
+            "$ref": "#/components/schemas/PaymentRules"
+          },
+          "bank": {
+            "type": "string"
+          },
+          "client": {
+            "type": "string"
+          },
+          "originalCreditor": {
+            "type": "string"
+          },
+          "currentBalance": {
+            "type": "number"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AccountStatus": {
+        "type": "string",
+        "enum": [
+          "NEW",
+          "ACTIVE",
+          "PAID",
+          "PARTIAL",
+          "DECLINED",
+          "LEGAL_HOLD",
+          "CLOSED",
+          "ADMIN",
+          "PAUSED",
+          "REFUSED"
+        ],
+        "description": "Account lifecycle status"
+      },
+      "DebtType": {
+        "type": "string",
+        "enum": [
+          "credit_card",
+          "personal_loan",
+          "payday_loan",
+          "installment_loan",
+          "line_of_credit",
+          "auto_loan",
+          "auto_lease",
+          "medical",
+          "dental",
+          "utility",
+          "telecom",
+          "mortgage",
+          "rent",
+          "hoa",
+          "student_loan_private",
+          "student_loan_federal",
+          "retail_financing",
+          "bnpl",
+          "business_loan",
+          "commercial",
+          "parking_private",
+          "tolls",
+          "gym_membership",
+          "subscription",
+          "club_dues",
+          "municipal_fines",
+          "court_fines",
+          "taxes",
+          "nsf_check",
+          "other"
+        ]
+      },
+      "Person": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "properties": {
+              "first": {
+                "type": "string"
+              },
+              "last": {
+                "type": "string"
+              }
+            }
+          },
+          "birthdate": {
+            "type": "string",
+            "description": "Birthdate string as stored by source systems"
+          },
+          "ssn": {
+            "type": "string"
+          },
+          "last4SSN": {
+            "type": "string"
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "street": { "type": "string" },
+          "additionalStreet": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "zip": { "type": "string" },
+          "country": { "type": "string" }
+        }
+      },
+      "History": {
+        "type": "object",
+        "properties": {
+          "chargedOff": {
+            "type": "object",
+            "properties": {
+              "balance": { "type": "number" },
+              "principal": { "type": "number" },
+              "interest": { "type": "number" },
+              "fees": { "type": "number" }
+            }
+          },
+          "accountOpened": {
+            "type": "object",
+            "properties": {
+              "date": { "type": "string", "format": "date-time" }
+            }
+          },
+          "lastPayment": {
+            "type": "object",
+            "properties": {
+              "amount": { "type": "number" },
+              "date": { "type": "string", "format": "date-time" }
+            }
+          },
+          "placed": {
+            "type": "object",
+            "properties": {
+              "balance": { "type": "number" },
+              "principal": { "type": "number" },
+              "interest": { "type": "number" },
+              "fees": { "type": "number" },
+              "date": { "type": "string", "format": "date-time" }
+            }
+          },
+          "origin": { "type": "string" },
+          "statuteLimitationsDate": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Compliance": {
+        "type": "object",
+        "properties": {
+          "state": { "type": "string" }
+        }
+      },
+      "PaymentRules": {
+        "type": "object",
+        "properties": {
+          "maxSettlementToday": { "type": "number", "minimum": 0, "maximum": 1 },
+          "maxSettlementPlan": { "type": "number", "minimum": 0, "maximum": 1 },
+          "maxMonths": { "type": "number" },
+          "maxInstallments": { "type": "number" }
+        }
+      },
+      "AccountListResponse": {
+        "type": "object",
+        "required": [
+          "accounts",
+          "total",
+          "page",
+          "limit",
+          "totalPages"
+        ],
+        "properties": {
+          "accounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Account"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          }
+        }
+      },
+      "DeleteResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
       }
     }
   }

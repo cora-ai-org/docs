@@ -1,0 +1,17 @@
+---
+title: "List Accounts"
+openapi: "GET /api/v2/accounts"
+---
+
+Returns paginated accounts for the organization authorized by your API key.
+
+Required headers:
+
+- `X-API-Key`
+- `X-Organization-Id` (required when one key can access multiple organizations)
+
+Useful query params:
+
+- `page` (default `1`)
+- `limit` (default `50`, max `200`)
+- `search` (matches `externalId`, `phoneNumber`, `metadata.filenumber`)

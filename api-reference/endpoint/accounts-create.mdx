@@ -1,0 +1,63 @@
+---
+title: "Create Account"
+openapi: "POST /api/v2/accounts"
+---
+
+Creates a new account in the organization scope resolved from the API key plus organization header.
+
+Required body fields:
+
+- `phoneNumber`
+- `externalId`
+- `portfolioId`
+
+Optional fields:
+
+- `status`: `NEW | ACTIVE | PAID | PARTIAL | DECLINED | LEGAL_HOLD | CLOSED | ADMIN | PAUSED | REFUSED`
+- `clientStatus`: source-system status text
+- `metadata`: free-form key/value object
+- `person`: person object (name, birthdate, ssn, last4SSN)
+- `emailAddress`: primary email string
+- `address`: address object (street, additionalStreet, city, state, zip, country)
+- `history`: account history object (chargedOff, accountOpened, lastPayment, placed, origin, statuteLimitationsDate)
+- `typeOfDebt`: debt classification
+- `compliance`: compliance object (for example `state`)
+- `paymentRules`: settlement/installment constraints
+- `bank`: bank name
+- `client`: client name
+- `originalCreditor`: original creditor name
+- `currentBalance`: numeric balance
+- `tags`: string array
+
+Example request:
+
+```json
+{
+  "phoneNumber": "+15125550123",
+  "externalId": "FILE-1000123",
+  "portfolioId": "PORT-42",
+  "status": "ACTIVE",
+  "clientStatus": "open",
+  "typeOfDebt": "credit_card",
+  "emailAddress": "jane@example.com",
+  "person": {
+    "name": {
+      "first": "Jane",
+      "last": "Doe"
+    },
+    "birthdate": "1989-01-31",
+    "last4SSN": "1234"
+  },
+  "address": {
+    "city": "Austin",
+    "state": "TX",
+    "zip": "78701"
+  },
+  "currentBalance": 1250.5,
+  "metadata": {
+    "filenumber": "FILE-1000123",
+    "source": "crm-import"
+  },
+  "tags": ["vip", "spanish"]
+}
+```

@@ -1,0 +1,8 @@
+---
+title: "Get Account"
+openapi: "GET /api/v2/accounts/{id}"
+---
+
+Fetches one account by MongoDB ID within the authorized organization scope.
+
+The response returns the full account document including metadata and nested structures (`person`, `address`, `history`, `paymentRules`, etc.) when present.

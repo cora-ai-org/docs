@@ -1,0 +1,60 @@
+---
+title: "Update Account"
+openapi: "PUT /api/v2/accounts/{id}"
+---
+
+Updates an existing account by ID.
+
+Protected fields are ignored:
+
+- `_id`
+- `id`
+- `organizationId`
+- `createdAt`
+- `updatedAt`
+- `deletedAt`
+
+Updatable fields:
+
+- `phoneNumber`: string
+- `externalId`: string
+- `portfolioId`: string
+- `status`: `NEW | ACTIVE | PAID | PARTIAL | DECLINED | LEGAL_HOLD | CLOSED | ADMIN | PAUSED | REFUSED`
+- `clientStatus`: string
+- `metadata`: object
+- `person`: object
+- `emailAddress`: string
+- `address`: object
+- `history`: object
+- `typeOfDebt`: debt classification enum
+- `compliance`: object
+- `paymentRules`: object
+- `bank`: string
+- `client`: string
+- `originalCreditor`: string
+- `currentBalance`: number
+- `tags`: string array
+
+Update semantics:
+
+- Partial update. Only fields provided in the body are modified.
+- Nested objects are merged by backend normalization logic.
+- `organizationId` cannot be changed through this API.
+
+Example request:
+
+```json
+{
+  "status": "PAUSED",
+  "clientStatus": "payment-arrangement",
+  "metadata": {
+    "collectorNote": "Requested callback Friday"
+  },
+  "paymentRules": {
+    "maxSettlementToday": 0.5,
+    "maxSettlementPlan": 0.65,
+    "maxMonths": 12
+  },
+  "tags": ["callback", "priority"]
+}
+```

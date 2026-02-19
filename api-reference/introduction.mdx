@@ -1,33 +1,35 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "Public API v2"
+description: "Accounts CRUD endpoints under /api/v2 secured by API key."
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Base URL
 
-## Welcome
+Use your deployment base URL, for example:
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+`https://cora-api-bz2d.onrender.com`
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+All endpoints in this section live under:
+
+`/api/v2/accounts`
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+Requests require:
+
+- `X-API-Key`: your public API key
+- `X-Organization-Id`: organization scope for the request
+
+If a key is configured for exactly one organization, `X-Organization-Id` may be omitted.
+
+The OpenAPI spec for these routes is in:
+
+`/api-reference/openapi.json`
 
 ```json
 "security": [
   {
-    "bearerAuth": []
+    "ApiKeyAuth": []
   }
 ]
 ```

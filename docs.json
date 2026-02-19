@@ -8,8 +8,27 @@
     "dark": "#15803D"
   },
   "favicon": "/favicon.svg",
+  "openapi": [
+    "api-reference/openapi.json"
+  ],
   "navigation": {
     "tabs": [
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Public API v2",
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/endpoint/accounts-list",
+              "api-reference/endpoint/accounts-create",
+              "api-reference/endpoint/accounts-get",
+              "api-reference/endpoint/accounts-update",
+              "api-reference/endpoint/accounts-delete"
+            ]
+          }
+        ]
+      },
       {
         "tab": "Webhooks",
         "groups": [
