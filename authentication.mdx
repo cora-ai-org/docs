@@ -4,10 +4,12 @@ description: "How to authenticate requests and generate request signatures."
 ---
 
 ## Auth Requirements By Endpoint Type
-- `GET /accounts-api/...`: `Authorization: Bearer <org_api_key>`
-- `PATCH /accounts-api/...`: `Authorization` + `X-Cora-Timestamp` + `X-Cora-Signature`
+
+- `GET /external-api/...`: `Authorization: Bearer <org_api_key>`
+- `PATCH /external-api/...`: `Authorization` + `X-Cora-Timestamp` + `X-Cora-Signature`
 
 ## API Key Format
+
 Expected bearer token format:
 
 ```text
@@ -17,10 +19,12 @@ cora_org_<keyId>.<secret>
 Use the full value in `Authorization`. The `<secret>` portion is used for HMAC signing.
 
 ## Timestamp Window
+
 - `X-Cora-Timestamp` must be within 5 minutes of server time.
 - Seconds or milliseconds are accepted.
 
 ## PATCH Signature Algorithm
+
 For each PATCH request:
 
 1. Build `rawBody` as the exact JSON string sent.
@@ -42,6 +46,7 @@ HMAC_SHA256_HEX(secret, canonical_payload)
 `path_with_query` must match the actual request path exactly.
 
 ## Node.js Signing Example
+
 ```ts
 import crypto from "crypto";
 
@@ -83,6 +88,7 @@ function buildPatchHeaders(args: {
 ```
 
 ## Auth Error Codes
+
 - `MISSING_AUTH_HEADER`: Missing `Authorization` on API-key-auth endpoint
 - `MISSING_AUTH_HEADERS`: Missing one or more required PATCH auth headers
 - `INVALID_API_KEY`: Key invalid, revoked, or not found

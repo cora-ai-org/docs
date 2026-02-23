@@ -25,13 +25,9 @@ Read in this order:
 
 ## Base Paths
 
-Dashboard key management endpoints:
-
-- `/organizations/:id/api-keys`
-
 External account endpoints:
 
-- `/accounts-api/organizations/:organizationId/accounts`
+- `/external-api/accounts`
 
 ## API Key Lifecycle
 
@@ -45,8 +41,8 @@ Important behavior:
 
 ## Request Authentication Model
 
-- `GET /accounts-api/...`: API key only
-- `PATCH /accounts-api/...`: API key + HMAC signature
+- `GET /external-api/...`: API key only
+- `PATCH /external-api/...`: API key + HMAC signature
 
 See full details in [Authentication & Signing](./accounts/authentication).
 
