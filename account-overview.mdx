@@ -1,0 +1,125 @@
+---
+title: "Account Model & Data Types"
+description: "Field-level reference for account responses and supported update payloads."
+---
+
+## Account Object Shape
+`GET` endpoints return an `account` object with this shape:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `id` | `string` | Internal Cora account id |
+| `externalId` | `string` | Your external identifier |
+| `organizationId` | `string` | Owning organization id |
+| `status` | `string` | Account status |
+| `clientStatus` | `string \| null` | Client-specific status |
+| `phoneNumber` | `string \| null` | Primary phone number |
+| `metadata` | `object` | Flexible key/value object |
+| `person` | `object \| null` | Person profile details |
+| `emailAddress` | `string \| null` | Primary email |
+| `currentEmailAddressId` | `string \| null` | Current email object id |
+| `emailAddressIds` | `string[]` | Linked email ids |
+| `address` | `object \| null` | Address details |
+| `history` | `object \| null` | Account history payload |
+| `typeOfDebt` | `object \| null` | Debt classification |
+| `compliance` | `object \| null` | Compliance metadata |
+| `paymentRules` | `object \| null` | Payment constraints |
+| `bank` | `object \| null` | Banking metadata |
+| `client` | `object \| null` | Client metadata |
+| `originalCreditor` | `string \| object \| null` | Creditor info |
+| `currentBalance` | `number \| string \| null` | Current balance |
+| `tags` | `string[]` | Tag list |
+| `contactInfo` | `object \| null` | Contact preferences/details |
+| `smsOptOut` | `boolean \| null` | SMS opt-out status |
+| `createdAt` | `ISO datetime string` | Creation timestamp |
+| `updatedAt` | `ISO datetime string` | Last update timestamp |
+
+## Updatable Top-Level Fields
+PATCH accepts only these top-level fields:
+
+- `status`
+- `clientStatus`
+- `metadata`
+- `person`
+- `emailAddress`
+- `currentEmailAddressId`
+- `emailAddressIds`
+- `address`
+- `history`
+- `typeOfDebt`
+- `compliance`
+- `paymentRules`
+- `bank`
+- `client`
+- `originalCreditor`
+- `currentBalance`
+- `tags`
+- `contactInfo`
+- `smsOptOut`
+- `phoneNumber`
+
+If no valid field is provided, API returns:
+
+- `400`
+- `code: NO_VALID_UPDATABLE_FIELDS`
+
+## Request Body Shapes
+Both payload shapes are supported.
+
+Direct:
+
+```json
+{
+  "status": "ACTIVE",
+  "metadata": {
+    "externalSystem": "crm-a"
+  }
+}
+```
+
+Wrapped:
+
+```json
+{
+  "update": {
+    "status": "ACTIVE",
+    "metadata": {
+      "externalSystem": "crm-a"
+    }
+  }
+}
+```
+
+## Update Tracking Behavior
+For successful PATCH updates:
+
+- Account changes are written to account `auditTrail` with source `EXTERNAL_API`
+- Timeline event `ACCOUNT_UPDATED` with source `EXTERNAL_API` is created
+- Response includes updated account identity and timestamp
+
+## Common Response Envelope
+Success:
+
+```json
+{
+  "success": true,
+  "code": "ACCOUNT_UPDATED",
+  "message": "Account updated successfully",
+  "account": {
+    "id": "ACCOUNT_ID",
+    "externalId": "FILE_123",
+    "organizationId": "ORG_ID",
+    "updatedAt": "2026-02-23T12:45:00.000Z"
+  }
+}
+```
+
+Error:
+
+```json
+{
+  "success": false,
+  "code": "ACCOUNT_NOT_FOUND",
+  "message": "Account not found"
+}
+```

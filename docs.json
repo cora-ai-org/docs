@@ -20,6 +20,20 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "API",
+        "pages": [
+          "overview",
+          "authentication",
+          {
+            "group": "Accounts",
+            "pages": [
+              "account-overview",
+              "endpoints"
+            ]
+          }
+        ]
       }
     ]
   },

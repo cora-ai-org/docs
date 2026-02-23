@@ -1,0 +1,71 @@
+---
+title: "API Overview"
+description: "Start here: what Cora's API does, how auth works, and where to find account docs."
+---
+
+## What This API Is For
+
+Use Cora's API to let your systems read and update account data in Cora.
+
+Main use cases:
+
+- Fetch one account by `externalId`
+- Fetch multiple accounts by `externalId`
+- Update account fields from your CRM or servicing platform
+- Manage organization API keys in the dashboard
+
+## How To Read These Docs
+
+Read in this order:
+
+1. [API Overview](./overview)
+2. [Authentication & Signing](./authentication)
+3. [Account Model & Data Types](./accounts/overview)
+4. [Accounts Endpoints & Examples](./accounts/endpoints)
+
+## Base Paths
+
+Dashboard key management endpoints:
+
+- `/organizations/:id/api-keys`
+
+External account endpoints:
+
+- `/accounts-api/organizations/:organizationId/accounts`
+
+## API Key Lifecycle
+
+Create and manage keys in Cora at `Settings > Integrations > External API Keys`.
+
+Important behavior:
+
+- Full key value is shown only once at creation
+- Keys do not auto-rotate
+- Rotate manually by creating a new key and revoking the old one
+
+## Request Authentication Model
+
+- `GET /accounts-api/...`: API key only
+- `PATCH /accounts-api/...`: API key + HMAC signature
+
+See full details in [Authentication & Signing](./accounts/authentication).
+
+## Response Contract
+
+All external account endpoints return:
+
+- `success`: boolean
+- `code`: machine-readable code
+- `message`: human-readable summary
+
+Success responses include endpoint data (for example `account`, `accounts`). Error responses always include `success: false` and a specific `code`.
+
+Example:
+
+```json
+{
+  "success": false,
+  "code": "INVALID_API_KEY",
+  "message": "Invalid API key"
+}
+```
