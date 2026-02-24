@@ -11,21 +11,13 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Webhooks",
-        "groups": [
-          {
-            "group": "Documentation",
-            "pages": [
-              "webhooks"
-            ]
-          }
-        ]
-      },
-      {
         "tab": "API",
         "pages": [
+          "index",
           "overview",
           "authentication",
+          "calls",
+          "campaign",
           {
             "group": "Accounts",
             "pages": [
@@ -33,6 +25,12 @@
               "endpoints"
             ]
           }
+        ]
+      },
+      {
+        "tab": "Webhooks",
+        "pages": [
+          "webhooks"
         ]
       }
     ]

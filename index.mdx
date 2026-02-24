@@ -1,17 +1,110 @@
 ---
-title: "Cora Webhooks"
-description: "Webhook documentation for events, payloads, signatures, and retries."
+title: "Implementation Guide"
+description: "Start here to implement Cora with API and webhook integrations."
 ---
 
-## Webhooks
+## Implementation Guide
 
-This documentation has moved to the dedicated webhook page.
+Use this guide to implement Cora, the AI debt collection platform, with any external solution.
 
-<Card
-  title="Webhooks"
-  icon="plug"
-  href="/webhooks"
-  horizontal
->
-  Learn how webhook delivery works, which events we send, and what payload to expect.
-</Card>
+Use it when you want Cora to run AI collections while your external systems remain the source of truth for accounts, payments, and reporting.
+
+## Before you start
+
+Make sure you have:
+
+- A Cora workspace with access to `Settings`
+- At least one AI agent configured
+- Your account data format ready (CSV columns or API payload format)
+- A public webhook endpoint that can accept `POST` requests
+- A plan for where payment events and status updates should be stored in your CRM or internal system
+
+## How implementation works
+
+Cora usually sits between your account source and your downstream systems:
+
+1. You import accounts into Cora.
+2. Run campaigns from Cora, to handle collection calls.
+3. Cora sends results (events and payment updates) to your webhook endpoints.
+4. Sync your CRM or backend based on those webhook events.
+5. Your payment processor and CRM integrations are authenticated with API keys managed in Cora.
+
+## Implementation steps
+
+### 1. Setup
+
+Set up your Cora account and configure AI agents.
+
+### 2. Import accounts
+
+Import accounts by CSV or through the API.
+
+### 3. Add webhook URLs
+
+Add webhook URLs to receive events and payment plan updates from Cora.
+
+### 4. Add API keys
+
+Add API keys in Cora for your payment gateway and supported CRMs (`SCollect`, `eCollect`).
+
+## Payments in Cora
+
+In Cora, payments are usually handled during payment plan negotiation.
+
+A PCI-compliant agent collects and tokenizes payment details, then processes payments through your configured integration.
+
+- If a customer makes an immediate payment, Cora processes it right away.
+- If a customer agrees to future payments, Cora creates a payment plan.
+- Cora then sends the tokenized payment details required for that plan to your configured webhook endpoint, routes them to a supported CRM, or stores them in Cora.
+
+## Step details
+
+### 1. Setup Cora
+
+- Configure your organization and agent behavior.
+- Confirm your outreach and repayment handling settings.
+- Validate that agents are ready before importing live accounts.
+
+### 2. Import accounts
+
+- Use CSV for manual uploads or API.
+- Use API for ongoing or automated syncs.
+- Keep stable external IDs so updates and reconciliation are reliable.
+
+### 3. Add webhooks
+
+- Register webhook URLs to receive delivery events and payment updates.
+- Verify signatures and log delivery IDs for troubleshooting.
+- Process webhook events idempotently to avoid duplicate updates.
+
+See [Webhooks](/webhooks) for payloads, signatures, retries, and headers.
+
+### 4. Add API keys and integrations
+
+- Add API keys for your payment processor and CRM integrations in Cora.
+- Rotate keys on a regular schedule.
+- Limit key scope to least privilege where possible.
+
+## Things to consider
+
+- Account syncing
+- Receiving webhooks
+
+For API behavior and auth details, see [API overview](/overview) and [Authentication](/authentication).
+
+## Supported
+
+### Payment gateway
+
+- `USAePay`
+
+### CRM
+
+- `SCollect`
+- `eCollect`
+
+## Request more
+
+Need support for another payment gateway or CRM. Reach out to request an integration.
+
+[Contact us](mailto:hello@corafone.com)
