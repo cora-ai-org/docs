@@ -30,6 +30,10 @@ Cora usually sits between your account source and your downstream systems:
 5. Cora sends results (events and payment updates) to your webhook endpoints.
 6. Sync your CRM or backend based on those webhook events.
 
+## Diagram
+
+![Cora implementation flow diagram](/images/flowdiagram.png)
+
 ## Payments in Cora
 
 In Cora, payments are usually handled during payment plan negotiation.
@@ -39,6 +43,10 @@ A PCI-compliant agent collects and tokenizes payment details, then processes pay
 - If a customer makes an immediate payment, Cora processes it right away.
 - If a customer agrees to future payments, Cora creates a payment plan.
 - Cora then sends the tokenized payment details required for that plan to your configured webhook endpoint, routes them to a supported CRM, or stores them in Cora.
+
+### Payments diagram
+
+![Cora payments flow diagram](/images/diagram/payments.png)
 
 ## Step details
 
