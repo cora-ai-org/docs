@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Corafone API Flow</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --green: #16A34A;
+    --green-light: #07C983;
+    --green-dark: #15803D;
+    --green-muted: rgba(22,163,74,0.1);
+    --green-border: rgba(22,163,74,0.25);
+    --bg: #0D1117;
+    --surface: #161B22;
+    --surface2: #1C2430;
+    --text: #E6EDF3;
+    --text-muted: #7D8590;
+    --border: rgba(255,255,255,0.07);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .diagram {
+    width: 100%;
+    max-width: 860px;
+  }
+
+  .diagram-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green-light);
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .diagram-title::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: var(--green-light);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--green-light);
+  }
+
+  /* ── Grid layout ── */
+  .flow-grid {
+    display: grid;
+    grid-template-columns: 1fr 48px 1fr 48px 1fr;
+    grid-template-rows: auto 64px auto 64px auto;
+    gap: 0;
+    align-items: center;
+  }
+
+  /* ── Nodes ── */
+  .node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .node:hover {
+    border-color: var(--green-border);
+    box-shadow: 0 0 24px rgba(22,163,74,0.08);
+  }
+
+  .node.primary {
+    border-color: var(--green-border);
+    background: linear-gradient(135deg, #161B22 0%, #0F1A12 100%);
+  }
+
+  .node-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .node-badge svg {
+    flex-shrink: 0;
+  }
+
+  .node-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .node-desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .node-tag {
+    display: inline-block;
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--green-muted);
+    color: var(--green-light);
+    border: 1px solid var(--green-border);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+
+  /* ── Arrows ── */
+  .arrow-h {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .arrow-h svg {
+    width: 48px;
+    height: 24px;
+    overflow: visible;
+  }
+
+  /* ── Vertical row: connector lines ── */
+  .v-connector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .v-connector-line {
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, var(--green-border), transparent);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Wide node: spans full width */
+  .node-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* ── Webhook row ── */
+  .webhook-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .webhook-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+
+  .webhook-item:hover {
+    border-color: var(--green-border);
+  }
+
+  .webhook-event {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--green-light);
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+
+  .webhook-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  /* ── Section label above webhook row ── */
+  .section-label {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 0 12px;
+  }
+
+  .section-label-text {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .section-label-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* animated dashes on arrows */
+  @keyframes dash {
+    to { stroke-dashoffset: -20; }
+  }
+
+  .arrow-animated {
+    animation: dash 1.2s linear infinite;
+  }
+</style>
+</head>
+<body>
+
+<div class="diagram">
+  <div class="diagram-title">Corafone API · Integration Flow</div>
+
+  <div class="flow-grid">
+
+    <!-- ROW 1: Authenticate → Campaign → Calls -->
+
+    <div class="node primary">
+      <div class="node-badge">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <rect width="10" height="10" rx="2" fill="#16A34A" opacity="0.25"/>
+          <rect x="2.5" y="2.5" width="5" height="5" rx="1" fill="#07C983"/>
+        </svg>
+        Step 01
+      </div>
+      <div class="node-title">Authenticate</div>
+      <div class="node-desc">Generate an HMAC-SHA256 signature using your API key and a timestamp. Include it in every request header.</div>
+      <span class="node-tag">X-Signature + X-Timestamp</span>
+    </div>
+
+    <!-- Arrow → -->
+    <div class="arrow-h">
+      <svg viewBox="0 0 48 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="2" y1="12" x2="40" y2="12" stroke="#16A34A" stroke-width="1.5" stroke-dasharray="5 3" class="arrow-animated" stroke-dashoffset="0"/>
+        <polyline points="34,7 42,12 34,17" stroke="#07C983" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="node">
+      <div class="node-badge">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <rect width="10" height="10" rx="2" fill="#16A34A" opacity="0.25"/>
+          <rect x="2.5" y="2.5" width="5" height="5" rx="1" fill="#07C983"/>
+        </svg>
+        Step 02
+      </div>
+      <div class="node-title">Create Account</div>
+      <div class="node-desc">POST a debtor account with contact details, balance, and client metadata. Receive an <code style="font-family:var(--mono);font-size:11px;color:var(--green-light)">account_id</code>.</div>
+      <span class="node-tag">POST /accounts</span>
+    </div>
+
+    <!-- Arrow → -->
+    <div class="arrow-h">
+      <svg viewBox="0 0 48 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="2" y1="12" x2="40" y2="12" stroke="#16A34A" stroke-width="1.5" stroke-dasharray="5 3" class="arrow-animated" stroke-dashoffset="0"/>
+        <polyline points="34,7 42,12 34,17" stroke="#07C983" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="node">
+      <div class="node-badge">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <rect width="10" height="10" rx="2" fill="#16A34A" opacity="0.25"/>
+          <rect x="2.5" y="2.5" width="5" height="5" rx="1" fill="#07C983"/>
+        </svg>
+        Step 03
+      </div>
+      <div class="node-title">Launch Campaign</div>
+      <div class="node-desc">A Corafone team member launches the campaign via the platform. Cora then schedules and manages outbound contact attempts automatically.</div>
+      <span class="node-tag">Via Platform</span>
+    </div>
+
+    <!-- ROW 2: vertical connectors from col 1 and col 5 down -->
+    <div class="v-connector" style="height:64px;">
+      <div class="v-connector-line"></div>
+    </div>
+    <div></div><!-- col 2 empty -->
+    <div></div><!-- col 3 empty -->
+    <div></div><!-- col 4 empty -->
+    <div class="v-connector" style="height:64px;">
+      <div class="v-connector-line"></div>
+    </div>
+
+    <!-- ROW 3: Calls node (col 1) + wide result node (col 3-5) -->
+    <div class="node">
+      <div class="node-badge">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <rect width="10" height="10" rx="2" fill="#16A34A" opacity="0.25"/>
+          <rect x="2.5" y="2.5" width="5" height="5" rx="1" fill="#07C983"/>
+        </svg>
+        Step 04
+      </div>
+      <div class="node-title">Cora Places Calls</div>
+      <div class="node-desc">AI agent contacts debtors, negotiates payments, handles objections, and processes arrangements — no human involvement required.</div>
+      <span class="node-tag">Automated</span>
+    </div>
+
+    <!-- Arrow → from col 1 node to col 3 -->
+    <div class="arrow-h">
+      <svg viewBox="0 0 48 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="2" y1="12" x2="40" y2="12" stroke="#16A34A" stroke-width="1.5" stroke-dasharray="5 3" class="arrow-animated" stroke-dashoffset="0"/>
+        <polyline points="34,7 42,12 34,17" stroke="#07C983" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="node" style="grid-column: 3 / span 3;">
+      <div class="node-badge">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <rect width="10" height="10" rx="2" fill="#16A34A" opacity="0.25"/>
+          <rect x="2.5" y="2.5" width="5" height="5" rx="1" fill="#07C983"/>
+        </svg>
+        Outcome
+      </div>
+      <div class="node-title">Call Result Recorded</div>
+      <div class="node-desc">Each call outcome (payment arranged, promise-to-pay, not reachable, disputed) is recorded on the account. You can retrieve call details and recordings via <code style="font-family:var(--mono);font-size:11px;color:var(--green-light)">GET /calls/:id</code> or receive real-time events via webhooks.</div>
+    </div>
+
+    <!-- ROW 4: section label + down arrow from col 3 area -->
+    <div class="section-label">
+      <span class="section-label-text">Webhook Events</span>
+      <div class="section-label-line"></div>
+    </div>
+
+    <!-- ROW 5: Webhook events -->
+    <div class="webhook-row">
+
+      <div class="webhook-item">
+        <div class="webhook-event">call.completed</div>
+        <div class="webhook-desc">Fired when a call ends. Includes duration, disposition, transcript reference, and recording URL.</div>
+      </div>
+
+      <div class="webhook-item">
+        <div class="webhook-event">payment.arranged</div>
+        <div class="webhook-desc">Debtor agreed to a payment plan or one-time payment during the call. Includes amount and schedule.</div>
+      </div>
+
+      <div class="webhook-item">
+        <div class="webhook-event">account.updated</div>
+        <div class="webhook-desc">Account status changed — e.g. moved to promise-to-pay, paid, or do-not-contact.</div>
+      </div>
+
+    </div>
+
+  </div><!-- /flow-grid -->
+
+  <!-- Footer note -->
+  <div style="margin-top:28px;display:flex;align-items:center;gap:8px;">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#7D8590" stroke-width="1"/><line x1="7" y1="6" x2="7" y2="10" stroke="#7D8590" stroke-width="1.2" stroke-linecap="round"/><circle cx="7" cy="4.5" r="0.7" fill="#7D8590"/></svg>
+    <span style="font-family:var(--mono);font-size:10.5px;color:var(--text-muted);">All requests require HMAC-SHA256 signing. See <span style="color:var(--green-light);">/authentication</span> for details.</span>
+  </div>
+
+</div>
+
+</body>
+</html>

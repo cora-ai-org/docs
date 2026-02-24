@@ -13,11 +13,9 @@
       {
         "tab": "API",
         "pages": [
-          "index",
           "overview",
+          "index",
           "authentication",
-          "calls",
-          "campaign",
           {
             "group": "Accounts",
             "pages": [
