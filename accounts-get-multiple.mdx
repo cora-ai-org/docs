@@ -1,0 +1,46 @@
+---
+title: "Get multiple accounts"
+description: "Fetch multiple accounts by externalIds."
+---
+
+## Endpoint
+`GET /external-api/accounts?externalIds=FILE_1,FILE_2`
+
+## Base path
+`/external-api/accounts`
+
+## Headers
+
+- `Authorization: Bearer <org_api_key>`
+
+## Rules
+
+- `externalIds` is required
+- Maximum 200 IDs per request
+
+## Curl example
+
+```bash
+curl -sS \
+  -X GET "https://api.corafone.com/external-api/accounts?externalIds=FILE_1,FILE_2" \
+  -H "Authorization: Bearer cora_org_<keyId>.<secret>"
+```
+
+## Success response
+
+```json
+{
+  "success": true,
+  "code": "ACCOUNTS_FETCHED",
+  "message": "Accounts fetched successfully",
+  "accounts": [
+    {
+      "id": "ACCOUNT_ID",
+      "externalId": "FILE_1",
+      "organizationId": "ORG_ID"
+    }
+  ],
+  "notFoundExternalIds": ["FILE_2"],
+  "count": 1
+}
+```

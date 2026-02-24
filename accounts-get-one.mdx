@@ -1,0 +1,37 @@
+---
+title: "Get one account"
+description: "Fetch a single account by externalId."
+---
+
+## Endpoint
+`GET /external-api/accounts/:externalId`
+
+## Base path
+`/external-api/accounts`
+
+## Headers
+
+- `Authorization: Bearer <org_api_key>`
+
+## Curl example
+
+```bash
+curl -sS \
+  -X GET "https://api.corafone.com/external-api/accounts/FILE_123" \
+  -H "Authorization: Bearer cora_org_<keyId>.<secret>"
+```
+
+## Success response
+
+```json
+{
+  "success": true,
+  "code": "ACCOUNT_FETCHED",
+  "message": "Account fetched successfully",
+  "account": {
+    "id": "ACCOUNT_ID",
+    "externalId": "FILE_123",
+    "organizationId": "ORG_ID"
+  }
+}
+```

@@ -1,0 +1,45 @@
+---
+title: "payment.success"
+description: "Webhook event sent when a payment is successfully processed."
+---
+
+## Event
+`payment.success`
+
+Sent when a payment is successfully processed.
+
+## Payload fields
+
+- `title`
+- `name`
+- `fileNumber`
+- `balance`
+- `callId`
+- `amount`
+- `paymentDate`
+- `note`
+- `phoneNumber`
+- `agentName`
+- Optional: `amountPerInstallment`
+- Optional: `numberOfInstallments`
+- Optional: `consumerId`
+
+## Example payload
+
+```json
+{
+  "title": "Acme Corp Payment Success",
+  "name": "Jane Smith",
+  "fileNumber": "12345",
+  "balance": "1250.00",
+  "callId": "call_abc123",
+  "amount": "100.00",
+  "paymentDate": "2026-01-30",
+  "note": "Payment received",
+  "phoneNumber": "+15125550123",
+  "agentName": "Collections Agent",
+  "amountPerInstallment": "25.00",
+  "numberOfInstallments": 4,
+  "consumerId": "98765"
+}
+```

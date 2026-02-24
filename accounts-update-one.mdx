@@ -1,0 +1,46 @@
+---
+title: "Update one account"
+description: "Update one account by externalId."
+---
+
+## Endpoint
+`PATCH /external-api/accounts/:externalId`
+
+## Base path
+`/external-api/accounts`
+
+## Headers
+
+- `Authorization: Bearer <org_api_key>`
+- `X-Cora-Timestamp: <unix_seconds_or_ms>`
+- `X-Cora-Signature: <hmac_sha256_hex>`
+- `Content-Type: application/json`
+
+## Request body
+
+Direct or `update` wrapper is supported.
+
+```json
+{
+  "metadata": {
+    "externalApiSyncState": "SYNCED"
+  },
+  "currentBalance": 450.25
+}
+```
+
+## Success response
+
+```json
+{
+  "success": true,
+  "code": "ACCOUNT_UPDATED",
+  "message": "Account updated successfully",
+  "account": {
+    "id": "ACCOUNT_ID",
+    "externalId": "FILE_123",
+    "organizationId": "ORG_ID",
+    "updatedAt": "2026-02-23T12:45:00.000Z"
+  }
+}
+```

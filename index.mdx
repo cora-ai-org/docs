@@ -1,100 +1,71 @@
 ---
-title: "Implementation Guide"
-description: "Start here to implement Cora with API and webhook integrations."
+title: "API Overview"
+description: "Start here: what Cora's API does, how auth works, and where to find account docs."
 ---
 
-## Implementation Guide
+## What This API Is For
 
-Use this guide to implement Cora, the AI debt collection platform, with any external solution.
+Use Cora's API to let your systems read and update account data in Cora.
 
-Use it when you want Cora to run AI collections while your external systems remain the source of truth for accounts, payments, and reporting.
+Main use cases:
 
-## Before you start
+- Fetch one account by `externalId`
+- Fetch multiple accounts by `externalId`
+- Update account fields from your CRM or servicing platform
+- Manage organization API keys in the dashboard
 
-Make sure you have:
+## How To Read These Docs
 
-- A Cora workspace with access to `Settings`
-- At least one AI agent configured
-- Your account data format ready (CSV columns or API payload format)
-- A public webhook endpoint that can accept `POST` requests
-- A plan for where payment events and status updates should be stored in your CRM or internal system
+Read in this order:
 
-## How implementation works
+1. [API Overview](/)
+2. [Implementation Guide](/implementation-guide)
+3. [Authentication & Signing](/authentication)
+4. [Account](/account-overview)
+5. [Get one account](/accounts-get-one)
+6. [Get multiple accounts](/accounts-get-multiple)
+7. [Update one account](/accounts-update-one)
+8. [Status codes and errors](/accounts-status-codes-errors)
 
-Cora usually sits between your account source and your downstream systems:
+## Base Paths
 
-1. You import accounts into Cora.
-2. Add API keys for your payment processor or CRM.
-3. Add webhook endpoints for important events (optional).
-4. Run campaigns from Cora, to handle collection calls.
-5. Cora sends results (events and payment updates) to your webhook endpoints.
-6. Sync your CRM or backend based on those webhook events.
+External account endpoints:
 
-## Diagram
+- `/external-api/accounts`
 
-![Cora implementation flow diagram](/images/flowdiagram.png)
+## API Key Lifecycle
 
-## Payments in Cora
+Create and manage keys in Cora at `Settings > Integrations > External API Keys`.
 
-In Cora, payments are usually handled during payment plan negotiation.
+Important behavior:
 
-A PCI-compliant agent collects and tokenizes payment details, then processes payments through your configured integration.
+- Full key value is shown only once at creation
+- Keys do not auto-rotate
+- Rotate manually by creating a new key and revoking the old one
 
-- If a customer makes an immediate payment, Cora processes it right away.
-- If a customer agrees to future payments, Cora creates a payment plan.
-- Cora then sends the tokenized payment details required for that plan to your configured webhook endpoint, routes them to a supported CRM, or stores them in Cora.
+## Request Authentication Model
 
-### Payments diagram
+- `GET /external-api/...`: API key only
+- `PATCH /external-api/...`: API key + HMAC signature
 
-![Cora payments flow diagram](/images/diagram/payments.png)
+See full details in [Authentication & Signing](/authentication).
 
-## Step details
+## Response Contract
 
-### 1. Setup Cora
+All external account endpoints return:
 
-- Configure your organization and agent behavior.
-- Confirm your outreach and repayment handling settings.
-- Validate that agents are ready before importing live accounts.
+- `success`: boolean
+- `code`: machine-readable code
+- `message`: human-readable summary
 
-### 2. Import accounts
+Success responses include endpoint data (for example `account`, `accounts`). Error responses always include `success: false` and a specific `code`.
 
-- Use CSV for manual uploads or API.
-- Use API for ongoing or automated syncs.
-- Keep stable external IDs so updates and reconciliation are reliable.
+Example:
 
-### 3. Add webhooks
-
-- Register webhook URLs to receive delivery events and payment updates.
-- Process webhook events idempotently to avoid duplicate updates.
-
-See [Webhooks](/webhooks) for payloads, signatures, retries, and headers.
-
-### 4. Add API keys and integrations
-
-- Add API keys for your payment processor and CRM integrations in Cora.
-
-## Things to consider
-
-- Account syncing
-    - It is your responsibility to keep the account synced, with any external events in your system. And map your status to our statuses.
-- Receiving webhooks
-    - To be able to track outcomes, receive payment plans and notifications of payment attempts and keep your account in sync. You need to be able to receive webhooks.
-
-For API behavior and auth details, see [API overview](/overview) and [Authentication](/authentication).
-
-## Supported
-
-### Payment gateway
-
-- `USAePay`
-
-### CRM
-
-- `SCollect`
-- `eCollect`
-
-## Request more
-
-Need support for another payment gateway or CRM. Reach out to request an integration.
-
-[Contact us](mailto:hello@corafone.com)
+```json
+{
+  "success": false,
+  "code": "INVALID_API_KEY",
+  "message": "Invalid API key"
+}
+```

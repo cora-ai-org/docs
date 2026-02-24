@@ -13,14 +13,17 @@
       {
         "tab": "API",
         "pages": [
-          "overview",
           "index",
+          "implementation-guide",
           "authentication",
           {
             "group": "Accounts",
             "pages": [
               "account-overview",
-              "endpoints"
+              "accounts-get-one",
+              "accounts-get-multiple",
+              "accounts-update-one",
+              "accounts-status-codes-errors"
             ]
           }
         ]
@@ -28,7 +31,10 @@
       {
         "tab": "Webhooks",
         "pages": [
-          "webhooks"
+          "webhooks",
+          "webhooks-payment-success",
+          "webhooks-payment-failed",
+          "webhooks-call-completed"
         ]
       }
     ]

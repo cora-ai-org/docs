@@ -1,0 +1,30 @@
+---
+title: "Status codes and errors"
+description: "HTTP statuses and machine-readable error codes for Accounts endpoints."
+---
+
+## Typical status codes
+
+- `200` success
+- `400` invalid request body/query
+- `401` missing/invalid auth or signature
+- `404` account or route not found
+- `405` method not allowed
+
+## Common machine-readable error codes
+
+- `EXTERNAL_IDS_REQUIRED`
+- `EXTERNAL_IDS_LIMIT_EXCEEDED`
+- `NO_VALID_UPDATABLE_FIELDS`
+- `INVALID_JSON_BODY`
+- `MISSING_AUTH_HEADER`
+- `MISSING_AUTH_HEADERS`
+- `INVALID_API_KEY`
+- `REQUEST_TIMESTAMP_OUTSIDE_WINDOW`
+- `INVALID_REQUEST_SIGNATURE`
+- `ACCOUNT_NOT_FOUND`
+- `METHOD_NOT_ALLOWED`
+- `ROUTE_NOT_FOUND`
+- `ACCOUNT_FETCH_FAILED`
+- `ACCOUNTS_FETCH_FAILED`
+- `ACCOUNT_UPDATE_FAILED`
