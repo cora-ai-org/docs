@@ -21,18 +21,97 @@ description: "Field-level reference for account responses and supported update p
 | `emailAddressIds` | `string[]` | Linked email ids |
 | `address` | `object \| null` | Address details |
 | `history` | `object \| null` | Account history payload |
-| `typeOfDebt` | `object \| null` | Debt classification |
+| `typeOfDebt` | `string \| null` | Debt classification enum |
 | `compliance` | `object \| null` | Compliance metadata |
 | `paymentRules` | `object \| null` | Payment constraints |
-| `bank` | `object \| null` | Banking metadata |
-| `client` | `object \| null` | Client metadata |
+| `bank` | `string \| null` | Banking metadata |
+| `client` | `string \| null` | Client metadata |
 | `originalCreditor` | `string \| object \| null` | Creditor info |
 | `currentBalance` | `number \| string \| null` | Current balance |
 | `tags` | `string[]` | Tag list |
 | `contactInfo` | `object \| null` | Contact preferences/details |
-| `smsOptOut` | `boolean \| null` | SMS opt-out status |
+| `smsOptOut` | `object \| null` | SMS opt-out details |
 | `createdAt` | `ISO datetime string` | Creation timestamp |
 | `updatedAt` | `ISO datetime string` | Last update timestamp |
+
+## Object Field Details
+
+### `person`
+| Field | Type | Notes |
+| --- | --- | --- |
+| `person.name.first` | `string \| null` | First name |
+| `person.name.last` | `string \| null` | Last name |
+| `person.birthdate` | `string \| null` | Birth date string (commonly `YYYY-MM-DD`) |
+| `person.ssn` | `string \| null` | Full SSN if provided |
+| `person.last4SSN` | `string \| null` | Last 4 SSN digits |
+
+### `address`
+| Field | Type | Notes |
+| --- | --- | --- |
+| `address.street` | `string \| null` | Primary street line |
+| `address.additionalStreet` | `string \| null` | Secondary street line |
+| `address.city` | `string \| null` | City |
+| `address.state` | `string \| null` | State/province |
+| `address.zip` | `string \| null` | Postal code |
+| `address.country` | `string \| null` | Country |
+
+### `history`
+| Field | Type | Notes |
+| --- | --- | --- |
+| `history.origin` | `string \| null` | Source/origin description |
+| `history.statuteLimitationsDate` | `ISO datetime string \| null` | Statute date |
+| `history.accountOpened.date` | `ISO datetime string \| null` | Account opened date |
+| `history.lastPayment.amount` | `number \| null` | Last payment amount |
+| `history.lastPayment.date` | `ISO datetime string \| null` | Last payment date |
+| `history.placed.balance` | `number \| null` | Balance at placement |
+| `history.placed.principal` | `number \| null` | Principal at placement |
+| `history.placed.interest` | `number \| null` | Interest at placement |
+| `history.placed.fees` | `number \| null` | Fees at placement |
+| `history.placed.date` | `ISO datetime string \| null` | Placement date |
+| `history.chargedOff.balance` | `number \| null` | Charge-off balance |
+| `history.chargedOff.principal` | `number \| null` | Charge-off principal |
+| `history.chargedOff.interest` | `number \| null` | Charge-off interest |
+| `history.chargedOff.fees` | `number \| null` | Charge-off fees |
+| `history.chargedOff.events` | `object[] \| null` | Charge-off event list (schema is flexible) |
+
+### `compliance`
+| Field | Type | Notes |
+| --- | --- | --- |
+| `compliance.state` | `string \| null` | Compliance state context |
+
+### `paymentRules`
+| Field | Type | Notes |
+| --- | --- | --- |
+| `paymentRules.maxSettlementToday` | `number \| null` | Fraction between `0` and `1` |
+| `paymentRules.maxSettlementPlan` | `number \| null` | Fraction between `0` and `1` |
+| `paymentRules.maxMonths` | `number \| null` | Max plan duration in months |
+| `paymentRules.maxInstallments` | `number \| null` | Max number of installments |
+
+### `contactInfo`
+| Field | Type | Notes |
+| --- | --- | --- |
+| `contactInfo.email.address` | `string \| null` | Email contact |
+| `contactInfo.email.verified` | `boolean \| null` | Email verification status |
+| `contactInfo.phone.number` | `string \| null` | Phone contact |
+| `contactInfo.phone.verified` | `boolean \| null` | Phone verification status |
+
+### `smsOptOut`
+| Field | Type | Notes |
+| --- | --- | --- |
+| `smsOptOut.isOptedOut` | `boolean` | Whether SMS is opted out |
+| `smsOptOut.optedOutAt` | `ISO datetime string \| null` | Opt-out timestamp |
+| `smsOptOut.optedOutReason` | `string \| null` | Opt-out reason (for example `STOP`) |
+| `smsOptOut.lastOptOutResponse` | `string \| null` | Last inbound opt-out text |
+| `smsOptOut.lookupCarrier` | `string \| null` | Carrier lookup result, if available |
+| `smsOptOut.lookupCarrierAt` | `ISO datetime string \| null` | Carrier lookup timestamp |
+
+## Enumerated Values
+
+### `status`
+`NEW`, `ACTIVE`, `PAID`, `PARTIAL`, `DECLINED`, `LEGAL_HOLD`, `CLOSED`, `ADMIN`, `PAUSED`, `REFUSED`
+
+### `typeOfDebt`
+`credit_card`, `personal_loan`, `payday_loan`, `installment_loan`, `line_of_credit`, `auto_loan`, `auto_lease`, `medical`, `dental`, `utility`, `telecom`, `mortgage`, `rent`, `hoa`, `student_loan_private`, `student_loan_federal`, `retail_financing`, `bnpl`, `business_loan`, `commercial`, `parking_private`, `tolls`, `gym_membership`, `subscription`, `club_dues`, `municipal_fines`, `court_fines`, `taxes`, `nsf_check`, `other`
 
 ## Updatable Top-Level Fields
 PATCH accepts only these top-level fields:
@@ -42,8 +121,6 @@ PATCH accepts only these top-level fields:
 - `metadata`
 - `person`
 - `emailAddress`
-- `currentEmailAddressId`
-- `emailAddressIds`
 - `address`
 - `history`
 - `typeOfDebt`
