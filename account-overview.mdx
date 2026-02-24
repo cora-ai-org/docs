@@ -14,29 +14,34 @@ description: "Field-level reference for account responses and supported update p
 | `status` | `string` | Account status |
 | `clientStatus` | `string \| null` | Client-specific status |
 | `phoneNumber` | `string \| null` | Primary phone number |
-| `metadata` | `object` | Flexible key/value object |
-| `person` | `object \| null` | Person profile details |
+| `metadata` | `Metadata` | Flexible key/value object |
+| `person` | `Person \| null` | Person profile details |
 | `emailAddress` | `string \| null` | Primary email |
 | `currentEmailAddressId` | `string \| null` | Current email object id |
 | `emailAddressIds` | `string[]` | Linked email ids |
-| `address` | `object \| null` | Address details |
-| `history` | `object \| null` | Account history payload |
+| `address` | `Address \| null` | Address details |
+| `history` | `History \| null` | Account history payload |
 | `typeOfDebt` | `string \| null` | Debt classification enum |
-| `compliance` | `object \| null` | Compliance metadata |
-| `paymentRules` | `object \| null` | Payment constraints |
+| `compliance` | `Compliance \| null` | Compliance metadata |
+| `paymentRules` | `PaymentRules \| null` | Payment constraints |
 | `bank` | `string \| null` | Banking metadata |
 | `client` | `string \| null` | Client metadata |
 | `originalCreditor` | `string \| object \| null` | Creditor info |
 | `currentBalance` | `number \| string \| null` | Current balance |
 | `tags` | `string[]` | Tag list |
-| `contactInfo` | `object \| null` | Contact preferences/details |
-| `smsOptOut` | `object \| null` | SMS opt-out details |
+| `contactInfo` | `ContactInfo \| null` | Contact preferences/details |
+| `smsOptOut` | `SmsOptOut \| null` | SMS opt-out details |
 | `createdAt` | `ISO datetime string` | Creation timestamp |
 | `updatedAt` | `ISO datetime string` | Last update timestamp |
 
-## Object Field Details
+## Type Definitions
 
-### `person`
+### `Metadata` Type
+| Field | Type | Notes |
+| --- | --- | --- |
+| `metadata.*` | `unknown` | Arbitrary key/value payload |
+
+### `Person` Type
 | Field | Type | Notes |
 | --- | --- | --- |
 | `person.name.first` | `string \| null` | First name |
@@ -45,7 +50,7 @@ description: "Field-level reference for account responses and supported update p
 | `person.ssn` | `string \| null` | Full SSN if provided |
 | `person.last4SSN` | `string \| null` | Last 4 SSN digits |
 
-### `address`
+### `Address` Type
 | Field | Type | Notes |
 | --- | --- | --- |
 | `address.street` | `string \| null` | Primary street line |
@@ -55,7 +60,7 @@ description: "Field-level reference for account responses and supported update p
 | `address.zip` | `string \| null` | Postal code |
 | `address.country` | `string \| null` | Country |
 
-### `history`
+### `History` Type
 | Field | Type | Notes |
 | --- | --- | --- |
 | `history.origin` | `string \| null` | Source/origin description |
@@ -74,12 +79,12 @@ description: "Field-level reference for account responses and supported update p
 | `history.chargedOff.fees` | `number \| null` | Charge-off fees |
 | `history.chargedOff.events` | `object[] \| null` | Charge-off event list (schema is flexible) |
 
-### `compliance`
+### `Compliance` Type
 | Field | Type | Notes |
 | --- | --- | --- |
 | `compliance.state` | `string \| null` | Compliance state context |
 
-### `paymentRules`
+### `PaymentRules` Type
 | Field | Type | Notes |
 | --- | --- | --- |
 | `paymentRules.maxSettlementToday` | `number \| null` | Fraction between `0` and `1` |
@@ -87,7 +92,7 @@ description: "Field-level reference for account responses and supported update p
 | `paymentRules.maxMonths` | `number \| null` | Max plan duration in months |
 | `paymentRules.maxInstallments` | `number \| null` | Max number of installments |
 
-### `contactInfo`
+### `ContactInfo` Type
 | Field | Type | Notes |
 | --- | --- | --- |
 | `contactInfo.email.address` | `string \| null` | Email contact |
@@ -95,7 +100,7 @@ description: "Field-level reference for account responses and supported update p
 | `contactInfo.phone.number` | `string \| null` | Phone contact |
 | `contactInfo.phone.verified` | `boolean \| null` | Phone verification status |
 
-### `smsOptOut`
+### `SmsOptOut` Type
 | Field | Type | Notes |
 | --- | --- | --- |
 | `smsOptOut.isOptedOut` | `boolean` | Whether SMS is opted out |
