@@ -4,89 +4,27 @@ description: "Webhook event sent when a payment is successfully processed."
 ---
 
 ## Event
-
 `payment.success`
 
-Sent when a payment completes successfully. Sources include voice/CRM payment tools (e.g. SCollect, USAePay accept flow, eCollect single payment) and the **tokenized payment** outcome path when a “pay today” amount was part of the request.
+Sent when a payment is successfully processed.
 
-The HTTP body uses the [standard webhook envelope](/webhooks): top-level `event`, `eventCategory`, `organization`, optional `agent`, `timestamp`, and **`payload`** — the object described below is the **`payload`** value.
+## Payload fields
 
-## How `payload` is built
+- `title`
+- `name`
+- `fileNumber`
+- `balance`
+- `callId`
+- `amount`
+- `paymentDate`
+- `note`
+- `phoneNumber`
+- `agentName`
+- Optional: `amountPerInstallment`
+- Optional: `numberOfInstallments`
+- Optional: `consumerId`
 
-Cora normalizes several fields into a consistent shape (aligned with payment notifications). Any of the following **additional** fields that were present on the internal event object are **copied onto `payload` unchanged**: `outcome`, `gateway`, `accountId`, `externalId`, `tokenization`, `paymentToday`, `paymentPlan`.
-
-- **Legacy / CRM-style events** typically only populate the normalized fields (plus optional installments / `consumerId`).
-- **Tokenized payment** events usually add `gateway`, `tokenization`, `paymentToday`, `paymentPlan`, and a structured `outcome` object (see below).
-
-Other properties on the internal event (for example a top-level `metadata` object) are **not** merged into `payload`; contextual data for tokenized flows is included inside **`payload.outcome`** when that object is present.
-
-## Normalized fields (inner `payload`)
-
-These are always set on the formatted payload. Values come from the event data, with fallbacks noted; missing values often appear as empty strings.
-
-| Field | Description |
-| --- | --- |
-| `title` | `"<Organization name> Payment Success"` |
-| `name` | Payor name (`name` or `payorname`) |
-| `fileNumber` | Account / file reference (`fileNumber` or `filenumber`) |
-| `balance` | Balance string if provided; otherwise `""` |
-| `callId` | Call id (`callId` or `externalCallId`) |
-| `amount` | Payment amount (`amount` or `paymentamount`) |
-| `paymentDate` | Date string for the payment. Tokenized flows often use an ISO-8601 timestamp from processing time; CRM flows typically use the tool-provided date string. |
-| `note` | Free-text note / gateway message when provided |
-| `phoneNumber` | Phone when provided |
-| `agentName` | Agent display name when provided |
-
-### Optional normalized fields
-
-Included only when the source event provides them:
-
-| Field | Description |
-| --- | --- |
-| `amountPerInstallment` | Installment amount (plan-related single payments) |
-| `numberOfInstallments` | Number of installments |
-| `consumerId` | Consumer id (e.g. eCollect) |
-
-## Additional fields (tokenized and enriched flows)
-
-Present on `payload` only when the emitter supplied them:
-
-| Field | Description |
-| --- | --- |
-| `gateway` | Payment gateway identifier (e.g. USAePay) |
-| `accountId` | Cora account id when resolved |
-| `externalId` | External / CRM account or file reference |
-| `tokenization` | Object with at least `success`; may include `token`, `error`, `errorcode` |
-| `paymentToday` | Result of the immediate charge when a “pay today” amount was processed (e.g. `success`, `message`, `transactionRefnum`, `authCode`) |
-| `paymentPlan` | Plan configuration / structure from the request when a plan was included |
-| `outcome` | Wrapper for tokenized outcome: see below |
-
-### `outcome` (tokenized payment)
-
-When tokenized payment handling emits this webhook, `payload.outcome` is typically:
-
-```json
-{
-  "eventType": "TOKENIZED_PAYMENT_OUTCOME",
-  "occurredAt": "<ISO-8601 timestamp>",
-  "outcome": {
-    "organizationId": "<org id>",
-    "accountId": "<optional>",
-    "externalId": "<optional>",
-    "gateway": "<gateway>",
-    "tokenization": { "success": true, "token": "<reference>" },
-    "paymentToday": { "success": true, "message": "<optional>", "transactionRefnum": "<optional>", "authCode": "<optional>" },
-    "paymentPlan": {},
-    "metadata": {}
-  }
-}
-```
-
-Shapes of `paymentPlan` and `metadata` depend on the request. Treat them as opaque JSON unless you control the producer.
-
-**Note:** For tokenized outcomes, Cora only emits `payment.success` (and `payment.failed`) from this path when the request included a **`paymentToday`** (immediate payment) leg; plan-only tokenized flows may not send this event.
-
-## Example: CRM / voice tool (typical)
+## Example payload
 
 ```json
 {
@@ -105,53 +43,3 @@ Shapes of `paymentPlan` and `metadata` depend on the request. Treat them as opaq
   "consumerId": "98765"
 }
 ```
-
-## Example: tokenized payment with enrichments
-
-```json
-{
-  "title": "Acme Corp Payment Success",
-  "name": "Jane Smith",
-  "fileNumber": "12345",
-  "balance": "",
-  "callId": "",
-  "amount": "50.00",
-  "paymentDate": "2026-02-17T18:05:21.841Z",
-  "note": "",
-  "phoneNumber": "",
-  "agentName": "",
-  "gateway": "USAEPAY",
-  "accountId": "67a1c2e3f4b5d6789012345",
-  "externalId": "12345",
-  "tokenization": {
-    "success": true,
-    "token": "tok_abc_example"
-  },
-  "paymentToday": {
-    "success": true,
-    "message": "Approved",
-    "transactionRefnum": "1001",
-    "authCode": "OK123"
-  },
-  "paymentPlan": {
-    "type": "regularPaymentPlan",
-    "config": {}
-  },
-  "outcome": {
-    "eventType": "TOKENIZED_PAYMENT_OUTCOME",
-    "occurredAt": "2026-02-17T18:05:21.842Z",
-    "outcome": {
-      "organizationId": "org_123",
-      "accountId": "67a1c2e3f4b5d6789012345",
-      "externalId": "12345",
-      "gateway": "USAEPAY",
-      "tokenization": { "success": true, "token": "tok_abc_example" },
-      "paymentToday": { "success": true, "message": "Approved" },
-      "paymentPlan": { "type": "regularPaymentPlan", "config": {} },
-      "metadata": {}
-    }
-  }
-}
-```
-
-(Example values are illustrative; real gateways and plan shapes vary.)
