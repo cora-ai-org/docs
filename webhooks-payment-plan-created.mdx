@@ -1,0 +1,53 @@
+---
+title: "payment.plan_created"
+description: "Webhook event sent when a multi-installment payment plan is saved."
+---
+
+## Event
+
+`payment.plan_created`
+
+Sent when a payment plan is created and persisted (for example SCollect / USAePay plan flows, or eCollect plan creation). Single-payment successes use [`payment.success`](/webhooks-payment-success) instead.
+
+The HTTP body uses the [standard webhook envelope](/webhooks): top-level `event`, `eventCategory`, `organization`, optional `agent`, `timestamp`, and **`payload`** — the object below is the **`payload`** value.
+
+## How `payload` is built
+
+Cora normalizes emitters into a consistent shape. Additional fields from the internal event are copied onto `payload` when present: `schedule`, `consumerId`, `planType`, `currency`, `externalId`, `accountId`, `gateway`, `outcome`.
+
+## Normalized fields (inner `payload`)
+
+| Field | Description |
+| --- | --- |
+| `title` | `"<Organization name> Payment Plan Created"` |
+| `name` | Customer / payor name when provided |
+| `fileNumber` | Optional — account / file reference (`fileNumber`, `filenumber`, or eCollect `consumerId`); omitted when unknown or when the value is the placeholder `NA` |
+| `balance` | Balance string when provided |
+| `callId` | Voice / session call id when provided |
+| `totalAmount` | Plan total as provided by the source |
+| `paymentDate` | Anchor date string for the plan when provided |
+| `numberOfInstallments` | Count of installments when provided |
+| `amountPerInstallment` | Per-installment amount when provided |
+| `phoneNumber` | Phone when provided |
+| `agentName` | Agent display name when provided |
+
+## Example payload
+
+```json
+{
+  "title": "Acme Corp Payment Plan Created",
+  "name": "Jane Smith",
+  "fileNumber": "12345",
+  "balance": "1250.00",
+  "callId": "call_abc123",
+  "totalAmount": "500.00",
+  "paymentDate": "2026-01-30",
+  "numberOfInstallments": 5,
+  "amountPerInstallment": "100.00",
+  "phoneNumber": "+15125550123",
+  "agentName": "Collections Agent",
+  "consumerId": "98765"
+}
+```
+
+eCollect flows may include `consumerId` on the passthrough fields; `fileNumber` is also set from that id when no separate file number was sent.

@@ -12,6 +12,7 @@ Sent when a call transitions to completed.
 
 - `callId`
 - `phoneNumber`
+- `fileNumber` (optional) — account file number when the call is associated with an account; omitted when unknown or when sync used the `NA` placeholder
 - `status`
 - `duration`
 - `outcomes`
@@ -54,6 +55,7 @@ Possible `outcomes` fields:
 {
   "callId": "67a0f74d1c2e8a12f9130ae2",
   "phoneNumber": "+15125550123",
+  "fileNumber": "ACC-429795",
   "status": "completed",
   "duration": 180000,
   "outcomes": {
