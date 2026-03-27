@@ -1,72 +1,282 @@
 ---
 title: "call.completed"
-description: "Webhook event sent when a call transitions to completed."
+description: "Webhook event sent when a call’s status is updated to Completed."
 ---
 
 ## Event
 `call.completed`
 
-Sent when a call transitions to completed.
+Sent when an existing call’s `status` is **updated** to `Completed` (for example, from `Processing` or `Queued`). This follows the call change stream on status updates; a call **inserted** already as `Completed` does not trigger this webhook from that path. Delivered inside the [standard webhook envelope](/webhooks); the fields below are the inner `payload` object. Emission is gated by server configuration; if the outbound emitter is disabled, no webhook is sent.
 
 ## Payload fields
 
-- `callId`
-- `phoneNumber`
-- `fileNumber` (optional) — account file number when the call is associated with an account; omitted when unknown or when sync used the `NA` placeholder
-- `status`
-- `duration`
-- `outcomes`
-- `summary` (sensitive card values masked)
-- `createdAt`
-- `endedAt`
+These fields are on the inner `payload` object (inside the [standard envelope](/webhooks)).
 
-`outcomes` is a sparse object: fields are only included when detected during call analysis.
+| Field | Required | Description |
+| --- | --- | --- |
+| `callId` | **Yes** | Internal call id. |
+| `phoneNumber` | **Yes** | Dialed or caller number; may be an empty string if missing on the record. |
+| `fileNumber` | **No** | Account file number when present; omitted when unknown or when sync used the `NA` placeholder. |
+| `status` | **Yes** | Call status; for this event, always `Completed` (same casing as stored on the call record). |
+| `duration` | **Yes** | Call length in **milliseconds** (`durationMs` on the call); `0` if not set. |
+| `outcomes` | **Yes** | Object of outcome flags (see below). Always present; may be `{}` if nothing was detected. |
+| `summary` | **Yes** | Call note or summary; sensitive card values are masked. May be an empty string. |
+| `createdAt` | **Yes** | ISO-8601 timestamp from the call record. |
+| `endedAt` | **Yes** | ISO-8601 timestamp when the webhook payload was built (when the completion transition was processed), not necessarily the provider’s end-of-call time. |
 
-Possible `outcomes` fields:
+### Outcomes
 
-- `confirmedName` (boolean)
-- `wasTheRightNumber` (boolean)
-- `wasTheRightParty` (boolean)
-- `wasWrongNumber` (boolean)
-- `wasWrongParty` (boolean)
-- `wantedToTalkHuman` (boolean)
-- `wantsCallBack` (boolean)
-- `ceaseAndDesist` (boolean)
-- `doNotCall` (boolean)
-- `lawSuitRisk` (boolean)
-- `fraud` (boolean)
-- `jail` (boolean)
-- `refuseToPay` (boolean)
-- `dispute` (boolean)
-- `legalAction` (boolean)
-- `cardDetailsProvided` (boolean)
-- `paymentMade` (boolean)
-- `plan_accepted` (boolean)
-- `plan_type` (string enum):
-  - `pay_in_full`
-  - `settle_today`
-  - `settlement_plan`
-  - `regular_plan`
-  - `tailored_plan`
+Every property in `outcomes` is **optional**: only keys with values from call analysis (or label fallbacks) are included. Before delivery, the webhook removes any outcome keys that are not approved for external consumers; those keys never appear in the payload. The tables below list **possible** keys that may be sent after that filtering, grouped for readability.
 
-## Example payload
+#### Collection
+
+| Field | Required | Type | Definition |
+| --- | --- | --- | --- |
+| `bankruptcy` | **No** | boolean | Bankruptcy mentioned or claimed. |
+| `bankruptcyAttorneyName` | **No** | string | Stated bankruptcy attorney name. |
+| `bankruptcyAttorneyPhone` | **No** | string | Stated bankruptcy attorney phone. |
+| `bankruptcyCaseNumber` | **No** | string | Stated bankruptcy case number. |
+| `bankruptcyChapter` | **No** | string | Stated bankruptcy chapter. |
+| `bankruptcyFilingDate` | **No** | string | Stated bankruptcy filing date. |
+| `claimsPaidDirect` | **No** | boolean | Claims payment was made directly to the creditor. |
+| `coDebtorRefused` | **No** | boolean | Co-debtor refused to pay or engage. |
+| `debtConsolidation` | **No** | boolean | Debt consolidation in play or discussed. |
+| `debtConsolidationCompany` | **No** | string | Named debt consolidation company. |
+| `deployed` | **No** | boolean | Military deployment indicated. |
+| `dispute` | **No** | boolean | Debt disputed on the call. |
+| `hospitalized` | **No** | boolean | Hospitalization indicated. |
+| `jail` | **No** | boolean | Incarceration indicated. |
+| `refuseToPay` | **No** | boolean | Refused to pay. |
+
+#### Contact
+
+| Field | Required | Type | Definition |
+| --- | --- | --- | --- |
+| `confirmedName` | **No** | boolean | Name was confirmed. |
+| `deceased` | **No** | boolean | Subject indicated as deceased. |
+| `wantedToTalkHuman` | **No** | boolean | Asked for a human agent. |
+| `wasTheRightNumber` | **No** | boolean | Reached the intended number. |
+| `wasTheRightParty` | **No** | boolean | Reached the correct party or debtor. |
+| `wasWrongNumber` | **No** | boolean | Wrong number. |
+| `wasWrongParty` | **No** | boolean | Wrong person. |
+
+#### Compliance
+
+| Field | Required | Type | Definition |
+| --- | --- | --- | --- |
+| `ceaseAndDesist` | **No** | boolean | Cease-communication request. |
+| `complaintAboutCollector` | **No** | boolean | Complaint about the collector. |
+| `doNotCall` | **No** | boolean | Do-not-call request. |
+| `fraud` | **No** | boolean | Fraud indicated or suspected. |
+| `lawSuitRisk` | **No** | boolean | Lawsuit or legal risk surfaced. |
+| `legalAction` | **No** | boolean | Legal action mentioned or threatened. |
+
+#### Preference
+
+| Field | Required | Type | Definition |
+| --- | --- | --- | --- |
+| `callbackConsent` | **No** | boolean | Consent to future callbacks. |
+| `emailOnlyPreference` | **No** | boolean | Email-only contact preference. |
+| `wantsCallBack` | **No** | boolean | Wants a callback. |
+
+#### Payments & Plans
+
+| Field | Required | Type | Definition |
+| --- | --- | --- | --- |
+| `cardDetailsProvided` | **No** | boolean | Card details were given on the call. |
+| `paymentFailed` | **No** | boolean | Payment attempt failed. |
+| `paymentMade` | **No** | boolean | Payment succeeded. |
+| `plan_accepted` | **No** | boolean | Payment plan accepted. |
+| `plan_type` | **No** | string | Plan kind: `pay_in_full`, `settle_today`, `settlement_plan`, `regular_plan`, `tailored_plan`. |
+| `promiseToPayDays` | **No** | number | Days until promised payment. |
+
+Future API versions may add keys; treat unexpected keys as forward-compatible.
+
+## Examples
+
+The HTTP `POST` body is the [standard envelope](/webhooks): top-level `event`, `eventCategory`, `organization`, optional `agent`, `timestamp`, `idempotencyKey`, and nested `payload`. The **`payload`** object for `call.completed` is what the tables above describe. Below, **inner payload** means that nested `payload` only; **full body** shows the complete JSON your endpoint receives.
+
+### Inner payload — minimal
+
+Nothing detected in analysis beyond completion: `outcomes` is an empty object. `fileNumber` is omitted when not available. `phoneNumber` may be an empty string.
+
+```json
+{
+  "callId": "67a0f74d1c2e8a12f9130ae2",
+  "phoneNumber": "",
+  "status": "Completed",
+  "duration": 0,
+  "outcomes": {},
+  "summary": "",
+  "createdAt": "2026-02-17T17:00:01.000Z",
+  "endedAt": "2026-02-17T17:05:12.430Z"
+}
+```
+
+### Inner payload — payment and plan
+
+Typical successful contact with payment taken and a plan type discussed (not every boolean needs to be present; sparse keys only).
 
 ```json
 {
   "callId": "67a0f74d1c2e8a12f9130ae2",
   "phoneNumber": "+15125550123",
   "fileNumber": "ACC-429795",
-  "status": "completed",
+  "status": "Completed",
   "duration": 180000,
   "outcomes": {
     "confirmedName": true,
+    "wasTheRightNumber": true,
     "wasTheRightParty": true,
     "paymentMade": true,
-    "plan_accepted": false,
-    "plan_type": "regular_plan"
+    "plan_accepted": true,
+    "plan_type": "regular_plan",
+    "promiseToPayDays": 14,
+    "wantsCallBack": false
   },
-  "summary": "Customer agreed to make payment.",
+  "summary": "Customer agreed to make payment on the existing plan terms.",
   "createdAt": "2026-02-17T17:00:01.000Z",
   "endedAt": "2026-02-17T17:03:01.000Z"
+}
+```
+
+### Inner payload — compliance and preferences
+
+Caller requests regulatory-style limits and states contact preferences.
+
+```json
+{
+  "callId": "6812ab3c4d5e6f7089012345",
+  "phoneNumber": "+13105550199",
+  "fileNumber": "FILE-8821",
+  "status": "Completed",
+  "duration": 420000,
+  "outcomes": {
+    "confirmedName": true,
+    "wasTheRightParty": true,
+    "ceaseAndDesist": true,
+    "doNotCall": true,
+    "lawSuitRisk": false,
+    "legalAction": false,
+    "emailOnlyPreference": true,
+    "wantsCallBack": false,
+    "callbackConsent": false
+  },
+  "summary": "Consumer requested written communications only and no further calls.",
+  "createdAt": "2026-03-01T14:22:00.000Z",
+  "endedAt": "2026-03-01T14:29:00.000Z"
+}
+```
+
+### Inner payload — wrong party / reachability
+
+Analysis indicates the wrong person or number; collection outcomes may still be sparse.
+
+```json
+{
+  "callId": "68f0e1d2c3b4a59687012345",
+  "phoneNumber": "+14085550100",
+  "status": "Completed",
+  "duration": 95000,
+  "outcomes": {
+    "wasWrongParty": true,
+    "wasTheRightNumber": false,
+    "refuseToPay": false
+  },
+  "summary": "Third party answered; debtor not available.",
+  "createdAt": "2026-03-10T18:00:00.000Z",
+  "endedAt": "2026-03-10T18:01:35.000Z"
+}
+```
+
+### Inner payload — bankruptcy strings
+
+When bankruptcy details are captured, related string fields may appear together with `bankruptcy: true`.
+
+```json
+{
+  "callId": "6901a2b3c4d5e6f708901234",
+  "phoneNumber": "+12125550111",
+  "fileNumber": "BNK-10044",
+  "status": "Completed",
+  "duration": 310000,
+  "outcomes": {
+    "confirmedName": true,
+    "wasTheRightParty": true,
+    "bankruptcy": true,
+    "bankruptcyChapter": "13",
+    "bankruptcyCaseNumber": "25-12345-ABC",
+    "bankruptcyFilingDate": "2025-11-01",
+    "bankruptcyAttorneyName": "Jane Doe Law Firm",
+    "bankruptcyAttorneyPhone": "+13125559876",
+    "paymentMade": false,
+    "plan_accepted": false
+  },
+  "summary": "Debtor stated active Chapter 13; case and attorney details provided.",
+  "createdAt": "2026-03-12T16:10:00.000Z",
+  "endedAt": "2026-03-12T16:15:10.000Z"
+}
+```
+
+### Inner payload — payment failed on call
+
+A payment was attempted but did not succeed; `paymentMade` may be false or omitted.
+
+```json
+{
+  "callId": "6902c3d4e5f6071829345678",
+  "phoneNumber": "+15125550900",
+  "fileNumber": "ACC-10002",
+  "status": "Completed",
+  "duration": 240000,
+  "outcomes": {
+    "confirmedName": true,
+    "wasTheRightParty": true,
+    "cardDetailsProvided": true,
+    "paymentFailed": true,
+    "paymentMade": false,
+    "wantedToTalkHuman": true
+  },
+  "summary": "Card declined; customer will call back with another card.",
+  "createdAt": "2026-03-12T20:00:00.000Z",
+  "endedAt": "2026-03-12T20:04:00.000Z"
+}
+```
+
+### Full HTTP body (envelope + inner payload)
+
+What your server receives for `call.completed` when an agent is associated with the call. If the webhook is organization-only, `agent` is omitted. `idempotencyKey` is stable per organization and `callId` for this event.
+
+```json
+{
+  "event": "call.completed",
+  "eventCategory": "calls",
+  "idempotencyKey": "call.completed:507f1f77bcf86cd799439011:67a0f74d1c2e8a12f9130ae2",
+  "organization": {
+    "id": "507f1f77bcf86cd799439011",
+    "name": "Acme Corp"
+  },
+  "agent": {
+    "id": "507f191e810c19729de860ea",
+    "name": "Outbound Collections"
+  },
+  "timestamp": "2026-02-17T17:03:01.000Z",
+  "payload": {
+    "callId": "67a0f74d1c2e8a12f9130ae2",
+    "phoneNumber": "+15125550123",
+    "fileNumber": "ACC-429795",
+    "status": "Completed",
+    "duration": 180000,
+    "outcomes": {
+      "confirmedName": true,
+      "wasTheRightParty": true,
+      "paymentMade": true,
+      "plan_accepted": false,
+      "plan_type": "regular_plan"
+    },
+    "summary": "Customer agreed to make payment.",
+    "createdAt": "2026-02-17T17:00:01.000Z",
+    "endedAt": "2026-02-17T17:03:01.000Z"
+  }
 }
 ```
