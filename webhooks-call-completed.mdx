@@ -30,8 +30,22 @@ Every property in `outcomes` is **optional**: only keys with values from call an
 
 
 #### Collection
+
+| Field | Required | Type | Definition |
+| --- | --- | --- | --- |
 | `refuseToPay` | **No** | boolean | Refused to pay. |
 | `dispute` | **No** | boolean | Debt disputed on the call. |
+| `engaged_negotiations` | **No** | boolean | Consumer engaged in payment negotiation (e.g. adjusted amounts or explored options). |
+| `acknowledgeDebt` | **No** | boolean | Consumer acknowledged the debt. |
+| `payDate` | **No** | boolean | Pay frequency or pay date was discussed. |
+| `sentSms` | **No** | boolean | Follow-up SMS was sent. |
+| `useLenderAgain` | **No** | boolean | Whether the consumer would use the lender again (`true` / `false`); omitted when not determined. |
+
+#### Language
+
+| Field | Required | Type | Definition |
+| --- | --- | --- | --- |
+| `spanishCall` | **No** | boolean | Call handled in Spanish. |
 
 #### Contact
 
@@ -40,6 +54,7 @@ Every property in `outcomes` is **optional**: only keys with values from call an
 | `confirmedName` | **No** | boolean | Name was confirmed. |
 | `deceased` | **No** | boolean | Subject indicated as deceased. |
 | `wantedToTalkHuman` | **No** | boolean | Asked for a human agent. |
+| `statusTransfer` | **No** | boolean | Call transferred due to status (e.g. to another queue or agent). |
 | `wasTheRightNumber` | **No** | boolean | Reached the intended number. |
 | `wasTheRightParty` | **No** | boolean | Reached the correct party or debtor. |
 | `wasWrongNumber` | **No** | boolean | Wrong number. |
@@ -60,7 +75,7 @@ Every property in `outcomes` is **optional**: only keys with values from call an
 
 | Field | Required | Type | Definition |
 | --- | --- | --- | --- |
-| `callbackConsent` | **No** | boolean | Consent to future callbacks. |
+| `callbackConsent` | **No** | boolean | Explicit consent to future callbacks. |
 | `emailOnlyPreference` | **No** | boolean | Email-only contact preference. |
 | `wantsCallBack` | **No** | boolean | Wants a callback. |
 
@@ -74,6 +89,23 @@ Every property in `outcomes` is **optional**: only keys with values from call an
 | `plan_accepted` | **No** | boolean | Payment plan accepted. |
 | `plan_type` | **No** | string | Plan kind: `pay_in_full`, `settle_today`, `settlement_plan`, `regular_plan`, `tailored_plan`. |
 | `promiseToPayDays` | **No** | number | Days until promised payment. |
+
+#### Employment
+
+| Field | Required | Type | Definition |
+| --- | --- | --- | --- |
+| `isEmployed` | **No** | boolean | Employed. |
+| `isUnemployed` | **No** | boolean | Unemployed. |
+| `multipleJobs` | **No** | boolean | Multiple jobs indicated. |
+
+#### Call progress
+
+| Field | Required | Type | Definition |
+| --- | --- | --- | --- |
+| `attemptedVerification` | **No** | boolean | Identity verification was attempted. |
+| `debtMentioned` | **No** | boolean | Debt was mentioned in the flow. |
+| `mirandaRead` | **No** | boolean | Miranda (or equivalent) disclosure read. |
+| `offeredPaymentOptions` | **No** | boolean | Payment options were offered. |
 
 #### Legal
 
@@ -275,7 +307,7 @@ What your server receives for `call.completed` when an agent is associated with 
       "confirmedName": true,
       "wasTheRightParty": true,
       "paymentMade": true,
-      "plan_accepted": false,
+      "plan_accepted": true,
       "plan_type": "regular_plan"
     },
     "summary": "Customer agreed to make payment.",
