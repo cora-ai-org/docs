@@ -15,38 +15,23 @@ These fields are on the inner `payload` object (inside the [standard envelope](/
 | Field | Required | Description |
 | --- | --- | --- |
 | `callId` | **Yes** | Internal call id. |
-| `phoneNumber` | **Yes** | Dialed or caller number; may be an empty string if missing on the record. |
-| `fileNumber` | **No** | Account file number when present; omitted when unknown or when sync used the `NA` placeholder. |
+| `phoneNumber` | **Yes** | Dialed or caller number; Empty if non-telephonic call. |
+| `fileNumber` | **No** | The filenumber on the Account, either provided by submission or generated if no external id provided. |
 | `status` | **Yes** | Call status; for this event, always `Completed` (same casing as stored on the call record). |
 | `duration` | **Yes** | Call length in **milliseconds** (`durationMs` on the call); `0` if not set. |
 | `outcomes` | **Yes** | Object of outcome flags (see below). Always present; may be `{}` if nothing was detected. |
-| `summary` | **Yes** | Call note or summary; sensitive card values are masked. May be an empty string. |
-| `createdAt` | **Yes** | ISO-8601 timestamp from the call record. |
-| `endedAt` | **Yes** | ISO-8601 timestamp when the webhook payload was built (when the completion transition was processed), not necessarily the provider’s end-of-call time. |
+| `summary` | **Yes** | Call note or summary. May be an empty string. |
+| `createdAt` | **Yes** | Timestamp from the call record. ISO-8601 |
+| `endedAt` | **Yes** | Timestamp when the webhook payload was built. ISO-8601 |
 
 ### Outcomes
 
 Every property in `outcomes` is **optional**: only keys with values from call analysis (or label fallbacks) are included. Before delivery, the webhook removes any outcome keys that are not approved for external consumers; those keys never appear in the payload. The tables below list **possible** keys that may be sent after that filtering, grouped for readability.
 
-#### Collection
 
-| Field | Required | Type | Definition |
-| --- | --- | --- | --- |
-| `bankruptcy` | **No** | boolean | Bankruptcy mentioned or claimed. |
-| `bankruptcyAttorneyName` | **No** | string | Stated bankruptcy attorney name. |
-| `bankruptcyAttorneyPhone` | **No** | string | Stated bankruptcy attorney phone. |
-| `bankruptcyCaseNumber` | **No** | string | Stated bankruptcy case number. |
-| `bankruptcyChapter` | **No** | string | Stated bankruptcy chapter. |
-| `bankruptcyFilingDate` | **No** | string | Stated bankruptcy filing date. |
-| `claimsPaidDirect` | **No** | boolean | Claims payment was made directly to the creditor. |
-| `coDebtorRefused` | **No** | boolean | Co-debtor refused to pay or engage. |
-| `debtConsolidation` | **No** | boolean | Debt consolidation in play or discussed. |
-| `debtConsolidationCompany` | **No** | string | Named debt consolidation company. |
-| `deployed` | **No** | boolean | Military deployment indicated. |
-| `dispute` | **No** | boolean | Debt disputed on the call. |
-| `hospitalized` | **No** | boolean | Hospitalization indicated. |
-| `jail` | **No** | boolean | Incarceration indicated. |
+#### Collection
 | `refuseToPay` | **No** | boolean | Refused to pay. |
+| `dispute` | **No** | boolean | Debt disputed on the call. |
 
 #### Contact
 
@@ -89,6 +74,25 @@ Every property in `outcomes` is **optional**: only keys with values from call an
 | `plan_accepted` | **No** | boolean | Payment plan accepted. |
 | `plan_type` | **No** | string | Plan kind: `pay_in_full`, `settle_today`, `settlement_plan`, `regular_plan`, `tailored_plan`. |
 | `promiseToPayDays` | **No** | number | Days until promised payment. |
+
+#### Legal
+
+| Field | Required | Type | Definition |
+| --- | --- | --- | --- |
+| `bankruptcy` | **No** | boolean | Bankruptcy mentioned or claimed. |
+| `bankruptcyAttorneyName` | **No** | string | Bankruptcy attorney name, if provided. |
+| `bankruptcyAttorneyPhone` | **No** | string | Bankruptcy attorney phone, if provided. |
+| `bankruptcyCaseNumber` | **No** | string | Bankruptcy case number, if provided. |
+| `bankruptcyChapter` | **No** | string | Bankruptcy chapter, if provided. |
+| `bankruptcyFilingDate` | **No** | string | Bankruptcy filing date, if provided. |
+| `claimsPaidDirect` | **No** | boolean | Claims payment was made directly to the creditor. |
+| `coDebtorRefused` | **No** | boolean | Co-debtor refused to pay or engage. |
+| `debtConsolidation` | **No** | boolean | Debt consolidation in play or discussed. |
+| `debtConsolidationCompany` | **No** | string | Named debt consolidation company. |
+| `deployed` | **No** | boolean | Military deployment indicated. |
+| `hospitalized` | **No** | boolean | Hospitalization indicated. |
+| `jail` | **No** | boolean | Incarceration indicated. |
+
 
 Future API versions may add keys; treat unexpected keys as forward-compatible.
 
