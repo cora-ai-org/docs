@@ -1,28 +1,28 @@
 ---
 title: "call.completed"
-description: "Webhook event sent when a call transitions to completed."
+description: "Webhook event sent when a call’s status is updated to Completed."
 ---
 
 ## Event
 `call.completed`
 
-Sent when a call transitions to completed.
+Sent when an existing call’s `status` is **updated** to `Completed` (for example, from `Processing` or `Queued`). This follows the call change stream on status updates; a call **inserted** already as `Completed` does not trigger this webhook from that path. Delivered inside the [standard webhook envelope](/webhooks); the fields below are the inner `payload` object. Emission is gated by server configuration; if the outbound emitter is disabled, no webhook is sent.
 
 ## Payload fields
 
 - `callId`
 - `phoneNumber`
 - `fileNumber` (optional) — account file number when the call is associated with an account; omitted when unknown or when sync used the `NA` placeholder
-- `status`
-- `duration`
+- `status` — call status string; for this event, always `Completed` (same casing as stored on the call record)
+- `duration` — call length in **milliseconds** (`durationMs` on the call)
 - `outcomes`
 - `summary` (sensitive card values masked)
-- `createdAt`
-- `endedAt`
+- `createdAt` — ISO-8601 timestamp from the call record
+- `endedAt` — ISO-8601 timestamp when the webhook payload was built (when the completion transition was processed), not necessarily the raw provider end-of-call time
 
 `outcomes` is a sparse object: fields are only included when detected during call analysis.
 
-Possible `outcomes` fields:
+Common `outcomes` fields:
 
 - `confirmedName` (boolean)
 - `wasTheRightNumber` (boolean)
@@ -49,6 +49,8 @@ Possible `outcomes` fields:
   - `regular_plan`
   - `tailored_plan`
 
+Depending on analysis and integrations, **additional** optional fields may appear (for example `paymentFailed`, `bankruptcy`, `deployed`, `hospitalized`, `deceased`, bankruptcy-related strings, debt consolidation fields, and similar). Treat unknown keys as forward-compatible.
+
 ## Example payload
 
 ```json
@@ -56,7 +58,7 @@ Possible `outcomes` fields:
   "callId": "67a0f74d1c2e8a12f9130ae2",
   "phoneNumber": "+15125550123",
   "fileNumber": "ACC-429795",
-  "status": "completed",
+  "status": "Completed",
   "duration": 180000,
   "outcomes": {
     "confirmedName": true,

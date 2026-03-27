@@ -37,10 +37,11 @@ Every delivery is a `POST` with `Content-Type: application/json`.
 
 Headers:
 
-- `X-Webhook-Signature`: HMAC-SHA256 hex digest of `JSON.stringify(payload)` signed with your webhook secret
-- `X-Webhook-Event`: Event name (for example `payment.success`)
+- `X-Webhook-Signature`: HMAC-SHA256 hex digest of the **full JSON** request body (`JSON.stringify` of the whole envelope) signed with your webhook secret
+- `X-Webhook-Event`: Event name (for example `payment.success` or `call.completed`)
 - `X-Webhook-Timestamp`: ISO-8601 timestamp from the payload
 - `X-Webhook-Delivery-Id`: Internal delivery log id
+- `X-Webhook-Idempotency-Key`: Stable idempotency key for the event (for `call.completed`, derived from organization and `callId` when present)
 - `User-Agent`: `Cora-Webhooks/1.0`
 
 Body envelope:
@@ -49,6 +50,7 @@ Body envelope:
 {
   "event": "payment.success",
   "eventCategory": "payments",
+  "idempotencyKey": "payment.success:org_123:2026-02-17T18:05:21.841Z",
   "organization": {
     "id": "org_123",
     "name": "Acme Corp"
@@ -62,7 +64,7 @@ Body envelope:
 }
 ```
 
-`agent` is only included for agent-level events where an `agentId` exists.
+`eventCategory` is `payments` for payment events and `calls` for `call.completed`. `agent` is only included for agent-level events where an `agentId` exists. `idempotencyKey` format varies by event type; payment events often include a timestamp component in the fallback form.
 
 ## Retries, Timeouts, And Failures
 
