@@ -9,10 +9,10 @@ description: "Webhook event when a payment plan is saved (tokenized or USAePay).
 
 Sent only from:
 
-- **Unified tokenized** flows when a `paymentPlan` is present and tokenization succeeds (including `createAndActivatePaymentPlanFromTokenizedMethod` after a successful Cora DB or external CRM plan dispatch).
-- **USAePay** when a **multi-installment** payment succeeds (`numberOfInstallments > 1`). Single-payment USAePay successes use [`payment.success`](/webhooks-payment-success) instead.
+- **Unified tokenized** flows when a `payment` or `payment plan` is setup, with a tokenized payment process.
+- **USAePay** payment processing when a `plan` or `payment` is set up.
 
-SCOLLECT, eCollect, and other integrations do **not** emit this event.
+SCollect, eCollect, and other direct CRM integrations do **not** emit this event. As the plans go straight into their service.
 
 The HTTP body uses the [standard webhook envelope](/webhooks): top-level `event`, `eventCategory`, `organization`, optional `agent`, `timestamp`, and **`payload`** — the object below is the **`payload`** value.
 
@@ -28,7 +28,7 @@ Cora merges normalized fields with plan-specific data. Optional passthrough when
 | --- | --- |
 | `title` | `"<Organization name> Payment Plan Created"` |
 | `name` | Customer / payor name when provided |
-| `fileNumber` | Optional — account / file reference (`fileNumber`, `filenumber`, or `consumerId`); omitted when unknown or `NA` |
+| `fileNumber` | Account / file reference uploaded with |
 | `balance` | Balance string when provided |
 | `callId` | Voice / session id when provided (e.g. metadata `runId`) |
 | `tokenized` | Processor token / payment key when provided |
@@ -39,7 +39,7 @@ Cora merges normalized fields with plan-specific data. Optional passthrough when
 | `amountPerInstallment` | Configured per-installment amount string |
 | `downPayment` | Down payment from plan config (`0.00` when none) |
 | `regularity` | `weekly`, `biweekly`, `monthly`, or `one_time` |
-| `planType` | Snake-case USAePay plan type, e.g. `settlement_plan`, `regular_payment_plan` |
+| `planType` | One of: `settle_today`, `settlement_plan`, `regular_payment_plan`, `single_payment` |
 | `payments` | Array of `{ paymentDate, amount, processed }` — `processed` is `true` only for the first row when an immediate charge succeeded (e.g. tokenized `paymentToday` or USAePay plan success) |
 | `phoneNumber` | Phone when provided |
 | `agentName` | Agent display name when provided |
