@@ -21,6 +21,7 @@ These fields are on the inner `payload` object (inside the [standard envelope](/
 | `duration` | **Yes** | Call length in **milliseconds** (`durationMs` on the call); `0` if not set. |
 | `outcomes` | **Yes** | Object of outcome flags (see below). Always present; may be `{}` if nothing was detected. |
 | `summary` | **Yes** | Call note or summary. May be an empty string. |
+| `recordingUrl` | **No** | The recording of the call. |
 | `createdAt` | **Yes** | Timestamp from the call record. ISO-8601 |
 | `endedAt` | **Yes** | Timestamp when the webhook payload was built. ISO-8601 |
 
