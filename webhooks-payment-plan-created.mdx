@@ -1,33 +1,46 @@
 ---
 title: "payment.plan_created"
-description: "Webhook event sent when a multi-installment payment plan is saved."
+description: "Webhook event when a payment plan is saved (tokenized or USAePay)."
 ---
 
 ## Event
 
 `payment.plan_created`
 
-Sent when a payment plan is created and persisted (for example SCollect / USAePay plan flows, or eCollect plan creation). Single-payment successes use [`payment.success`](/webhooks-payment-success) instead.
+Sent only from:
+
+- **Unified tokenized** flows when a `paymentPlan` is present and tokenization succeeds (including `createAndActivatePaymentPlanFromTokenizedMethod` after a successful Cora DB or external CRM plan dispatch).
+- **USAePay** when a **multi-installment** payment succeeds (`numberOfInstallments > 1`). Single-payment USAePay successes use [`payment.success`](/webhooks-payment-success) instead.
+
+SCOLLECT, eCollect, and other integrations do **not** emit this event.
 
 The HTTP body uses the [standard webhook envelope](/webhooks): top-level `event`, `eventCategory`, `organization`, optional `agent`, `timestamp`, and **`payload`** — the object below is the **`payload`** value.
 
+Treat `tokenized` as sensitive (processor payment key / token). Use HTTPS, protect your signing secret, and avoid logging full bodies.
+
 ## How `payload` is built
 
-Cora normalizes emitters into a consistent shape. Additional fields from the internal event are copied onto `payload` when present: `schedule`, `consumerId`, `planType`, `currency`, `externalId`, `accountId`, `gateway`, `outcome`.
+Cora merges normalized fields with plan-specific data. Optional passthrough when present: `consumerId`, `currency`, `externalId`, `accountId`, `gateway`, `outcome`.
 
-## Normalized fields (inner `payload`)
+## Normalized and plan fields (inner `payload`)
 
 | Field | Description |
 | --- | --- |
 | `title` | `"<Organization name> Payment Plan Created"` |
 | `name` | Customer / payor name when provided |
-| `fileNumber` | Optional — account / file reference (`fileNumber`, `filenumber`, or eCollect `consumerId`); omitted when unknown or when the value is the placeholder `NA` |
+| `fileNumber` | Optional — account / file reference (`fileNumber`, `filenumber`, or `consumerId`); omitted when unknown or `NA` |
 | `balance` | Balance string when provided |
-| `callId` | Voice / session call id when provided |
-| `totalAmount` | Plan total as provided by the source |
-| `paymentDate` | Anchor date string for the plan when provided |
-| `numberOfInstallments` | Count of installments when provided |
-| `amountPerInstallment` | Per-installment amount when provided |
+| `callId` | Voice / session id when provided (e.g. metadata `runId`) |
+| `tokenized` | Processor token / payment key when provided |
+| `paymentType` | Instrument hint: `card`, `ach`, or `wallet` (voice flows default to `card`) |
+| `totalAmount` | Sum of scheduled payment amounts (string, two decimals) |
+| `paymentDate` | First scheduled payment date (`YYYY-MM-DD`) |
+| `numberOfInstallments` | Length of the `payments` array |
+| `amountPerInstallment` | Configured per-installment amount string |
+| `downPayment` | Down payment from plan config (`0.00` when none) |
+| `regularity` | `weekly`, `biweekly`, `monthly`, or `one_time` |
+| `planType` | Snake-case USAePay plan type, e.g. `settlement_plan`, `regular_payment_plan` |
+| `payments` | Array of `{ paymentDate, amount, processed }` — `processed` is `true` only for the first row when an immediate charge succeeded (e.g. tokenized `paymentToday` or USAePay plan success) |
 | `phoneNumber` | Phone when provided |
 | `agentName` | Agent display name when provided |
 
@@ -40,14 +53,23 @@ Cora normalizes emitters into a consistent shape. Additional fields from the int
   "fileNumber": "12345",
   "balance": "1250.00",
   "callId": "call_abc123",
+  "tokenized": "token_abc123",
+  "paymentType": "card",
   "totalAmount": "500.00",
   "paymentDate": "2026-01-30",
   "numberOfInstallments": 5,
   "amountPerInstallment": "100.00",
+  "downPayment": "100.00",
+  "regularity": "weekly",
+  "planType": "settlement_plan",
+  "payments": [
+    { "paymentDate": "2026-01-30", "amount": "100.00", "processed": true },
+    { "paymentDate": "2026-02-07", "amount": "100.00", "processed": false },
+    { "paymentDate": "2026-02-14", "amount": "100.00", "processed": false },
+    { "paymentDate": "2026-02-21", "amount": "100.00", "processed": false },
+    { "paymentDate": "2026-02-28", "amount": "100.00", "processed": false }
+  ],
   "phoneNumber": "+15125550123",
-  "agentName": "Collections Agent",
-  "consumerId": "98765"
+  "agentName": "Collections Agent"
 }
 ```
-
-eCollect flows may include `consumerId` on the passthrough fields; `fileNumber` is also set from that id when no separate file number was sent.
