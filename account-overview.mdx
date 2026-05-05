@@ -11,8 +11,9 @@ description: "Field-level reference for account responses and supported update p
 | `id` | `string` | Internal Cora account id |
 | `externalId` | `string` | Your external identifier |
 | `organizationId` | `string` | Owning organization id |
-| `status` | `string` | Account status |
-| `clientStatus` | `string \| null` | Client-specific status |
+| `status` | `string` | Granular account status |
+| `status_category` | `string` | Broader account status category derived from `status` |
+| `clientStatus` | `string \| null` | Freely input your own status |
 | `phoneNumber` | `string \| null` | Primary phone number |
 | `metadata` | `Metadata` | Flexible key/value object |
 | `person` | `Person \| null` | Person profile details |
@@ -113,7 +114,12 @@ description: "Field-level reference for account responses and supported update p
 ## Enumerated Values
 
 ### `status`
-`NEW`, `ACTIVE`, `PAID`, `PARTIAL`, `DECLINED`, `LEGAL_HOLD`, `CLOSED`, `ADMIN`, `PAUSED`, `REFUSED`
+`LOADED`, `ACTIVE`, `PAID IN FULL`, `SETTLED IN FULL`, `PAYMENTS ON FILE`, `DECLINED`, `REFUSED`, `DISPUTE`, `CHARGEBACK`, `BANKRUPTCY`, `CEASE & DESIST`, `COMPLAINT FILED`, `FRAUD`, `LAWSUIT RISK`, `DO NOT CALL`, `DECEASED`, `JAIL`, `RECALLED`, `MANAGER REVIEW`, `FOLLOW UP`, `OTHER`
+
+### `status_category`
+`NEW`, `ACTIVE`, `PAID`, `PARTIAL`, `DECLINED`, `REFUSED`, `LEGAL_HOLD`, `CLOSED`, `ADMIN`
+
+`status_category` is returned by account GET endpoints and is derived from `status`. Use `status`, not `status_category`, when updating an account through `PATCH /external-api/accounts/:externalId`.
 
 ### `typeOfDebt`
 `credit_card`, `personal_loan`, `payday_loan`, `installment_loan`, `line_of_credit`, `auto_loan`, `auto_lease`, `medical`, `dental`, `utility`, `telecom`, `mortgage`, `rent`, `hoa`, `student_loan_private`, `student_loan_federal`, `retail_financing`, `bnpl`, `business_loan`, `commercial`, `parking_private`, `tolls`, `gym_membership`, `subscription`, `club_dues`, `municipal_fines`, `court_fines`, `taxes`, `nsf_check`, `other`
