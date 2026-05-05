@@ -22,12 +22,15 @@ Direct or `update` wrapper is supported.
 
 ```json
 {
+  "status": "ACTIVE",
   "metadata": {
     "externalApiSyncState": "SYNCED"
   },
   "currentBalance": 450.25
 }
 ```
+
+`status` must be one of the supported granular account statuses listed in [Account](/account-overview). `status_category` is derived by Cora and cannot be updated through this endpoint.
 
 ## Success response
 
