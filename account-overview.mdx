@@ -6,34 +6,36 @@ description: "Field-level reference for account responses and supported update p
 ## Account Object Shape
 `GET` endpoints return an `account` object with this shape:
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `id` | `string` | Internal Cora account id |
-| `externalId` | `string` | Your external identifier |
-| `organizationId` | `string` | Owning organization id |
-| `status` | `string` | Granular account status |
-| `status_category` | `string` | Broader account status category derived from `status` |
-| `clientStatus` | `string \| null` | Freely input your own status |
-| `phoneNumber` | `string \| null` | Primary phone number |
-| `metadata` | `Metadata` | Flexible key/value object |
-| `person` | `Person \| null` | Person profile details |
-| `emailAddress` | `string \| null` | Primary email |
-| `currentEmailAddressId` | `string \| null` | Current email object id |
-| `emailAddressIds` | `string[]` | Linked email ids |
-| `address` | `Address \| null` | Address details |
-| `history` | `History \| null` | Account history payload |
-| `typeOfDebt` | `string \| null` | Debt classification enum |
-| `compliance` | `Compliance \| null` | Compliance metadata |
-| `paymentRules` | `PaymentRules \| null` | Payment constraints |
-| `bank` | `string \| null` | Banking metadata |
-| `client` | `string \| null` | Client metadata |
-| `originalCreditor` | `string \| object \| null` | Creditor info |
-| `currentBalance` | `number \| string \| null` | Current balance |
-| `tags` | `string[]` | Tag list |
-| `contactInfo` | `ContactInfo \| null` | Contact preferences/details |
-| `smsOptOut` | `SmsOptOut \| null` | SMS opt-out details |
-| `createdAt` | `ISO datetime string` | Creation timestamp |
-| `updatedAt` | `ISO datetime string` | Last update timestamp |
+`Can Be Updated` indicates whether the field can be sent to `PATCH /external-api/accounts/:externalId`.
+
+| Field | Type | Can Be Updated | Notes |
+| --- | --- | --- | --- |
+| `id` | `string` | `false` | Internal Cora account id |
+| `externalId` | `string` | `false` | Your external identifier |
+| `organizationId` | `string` | `false` | Owning organization id |
+| `status` | `string` | `true` | Granular account status |
+| `status_category` | `string` | `false` | Broader account status category derived from `status` |
+| `clientStatus` | `string \| null` | `true` | Freely input your own status |
+| `phoneNumber` | `string \| null` | `true` | Primary phone number |
+| `metadata` | `Metadata` | `true` | Flexible key/value object |
+| `person` | `Person \| null` | `true` | Person profile details |
+| `emailAddress` | `string \| null` | `true` | Primary email |
+| `currentEmailAddressId` | `string \| null` | `false` | Current email object id |
+| `emailAddressIds` | `string[]` | `false` | Linked email ids |
+| `address` | `Address \| null` | `true` | Address details |
+| `history` | `History \| null` | `true` | Account history payload |
+| `typeOfDebt` | `string \| null` | `true` | Debt classification enum |
+| `compliance` | `Compliance \| null` | `true` | Compliance metadata |
+| `paymentRules` | `PaymentRules \| null` | `true` | Payment constraints |
+| `bank` | `string \| null` | `true` | Name of bank the debt originated from |
+| `client` | `string \| null` | `true` | Name of the current client |
+| `originalCreditor` | `string \| object \| null` | `true` | Name of the original creditor |
+| `currentBalance` | `number \| string \| null` | `true` | Current balance |
+| `tags` | `string[]` | `true` | Tag list |
+| `contactInfo` | `ContactInfo \| null` | `true` | Contact preferences/details |
+| `smsOptOut` | `SmsOptOut \| null` | `true` | SMS opt-out details |
+| `createdAt` | `ISO datetime string` | `false` | Creation timestamp |
+| `updatedAt` | `ISO datetime string` | `false` | Last update timestamp |
 
 ## Type Definitions
 
